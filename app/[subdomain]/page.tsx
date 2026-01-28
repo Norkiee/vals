@@ -53,14 +53,30 @@ export default function ValentinePage() {
   const [responded, setResponded] = useState(false)
   const [response, setResponse] = useState<boolean | null>(null)
   const [isMobile, setIsMobile] = useState(true)
+  const [scale, setScale] = useState(1.5)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
+    const calculateScale = () => {
+      if (typeof window === 'undefined') return
+      const screenWidth = window.innerWidth
+      const screenHeight = window.innerHeight
+      const scaleX = (screenWidth - 32) / MOBILE_WIDTH
+      const scaleY = (screenHeight - 80) / MOBILE_HEIGHT
+      setScale(Math.min(scaleX, scaleY, 2.5))
+    }
     checkMobile()
+    calculateScale()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener('resize', calculateScale)
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('resize', calculateScale)
+    }
   }, [])
 
   useEffect(() => {
@@ -146,24 +162,6 @@ export default function ValentinePage() {
   const elements = canvasLayout?.mobile || []
   const fontSize = valentine.font_size || 16
 
-  // Calculate scale to fit screen while maintaining aspect ratio
-  const [scale, setScale] = useState(1.5)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    const calculateScale = () => {
-      if (typeof window === 'undefined') return
-      const screenWidth = window.innerWidth
-      const screenHeight = window.innerHeight
-      const scaleX = (screenWidth - 32) / MOBILE_WIDTH // 32px padding
-      const scaleY = (screenHeight - 80) / MOBILE_HEIGHT // 80px for margins
-      setScale(Math.min(scaleX, scaleY, 2.5)) // Cap at 2.5x
-    }
-    calculateScale()
-    window.addEventListener('resize', calculateScale)
-    return () => window.removeEventListener('resize', calculateScale)
-  }, [])
 
   const renderPhoto = (element: CanvasElement) => {
     const photoIndex = element.photoIndex ?? 0

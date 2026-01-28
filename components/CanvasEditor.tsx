@@ -428,7 +428,10 @@ export default function CanvasEditor({
         }}
         onMouseDown={(e) => handleDragStart(e, element.id)}
         onTouchStart={(e) => handleDragStart(e, element.id)}
-        onClick={() => setSelectedId(element.id)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setSelectedId(element.id)
+        }}
       >
         {content}
 
@@ -453,6 +456,7 @@ export default function CanvasEditor({
                   style={positions[handle]}
                   onMouseDown={(e) => handleResizeStart(e, element.id, handle)}
                   onTouchStart={(e) => handleResizeStart(e, element.id, handle)}
+                  onClick={(e) => e.stopPropagation()}
                 />
               )
             })}
@@ -475,6 +479,7 @@ export default function CanvasEditor({
               className="absolute left-1/2 -bottom-10 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-alias hover:bg-gray-50"
               onMouseDown={(e) => handleRotateStart(e, element.id)}
               onTouchStart={(e) => handleRotateStart(e, element.id)}
+              onClick={(e) => e.stopPropagation()}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />

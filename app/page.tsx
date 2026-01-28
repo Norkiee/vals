@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
       {/* Photos arrangement */}
-      <div className="relative w-full max-w-xl h-72 md:h-96 mb-1">
+      <div className="relative w-full max-w-xl h-72 md:h-96 -mb-8">
         {/* Left photo */}
         <div className="absolute left-8 md:left-16 top-8 transform -rotate-12 z-10">
           <div className="w-40 md:w-52 aspect-square relative">
@@ -47,7 +47,7 @@ export default function Home() {
 
       {/* Title */}
       <h1
-        className="font-loveheart text-6xl md:text-8xl text-amber-600 mb-2 text-center"
+        className="font-loveheart text-7xl md:text-9xl text-amber-600 mb-4 text-center"
         style={{
           WebkitTextStroke: '4.5px white',
           textShadow: '3px 3px 6px rgba(0, 0, 0, 0.3)',

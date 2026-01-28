@@ -224,7 +224,7 @@ export default function CreatePage() {
       </div>
 
       {/* Right side - Canvas Editor (fixed) */}
-      <div className="hidden lg:flex flex-1 bg-gray-50 flex-col h-screen overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-white flex-col h-screen overflow-hidden">
         {/* Floating toolbar */}
         <div className="flex items-center justify-center gap-2 py-3">
           {/* Color picker */}

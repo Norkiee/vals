@@ -194,6 +194,11 @@ export default function CanvasEditor({
     })
   }, [])
 
+  const handleDeleteElement = useCallback((id: string) => {
+    setElements(prev => prev.filter(e => e.id !== id))
+    setSelectedId(null)
+  }, [])
+
   // Drag handlers
   const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string) => {
     e.stopPropagation()
@@ -412,7 +417,7 @@ export default function CanvasEditor({
     return (
       <div
         key={element.id}
-        className={`absolute cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+        className="absolute cursor-grab active:cursor-grabbing"
         style={{
           left: element.x,
           top: element.y,
@@ -430,26 +435,30 @@ export default function CanvasEditor({
         {/* Selection handles */}
         {isSelected && (
           <>
-            {/* Resize handles */}
-            {['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map(handle => {
-              const positions: Record<string, { left?: string; right?: string; top?: string; bottom?: string; cursor: string }> = {
-                nw: { left: '-4px', top: '-4px', cursor: 'nwse-resize' },
-                n: { left: '50%', top: '-4px', cursor: 'ns-resize' },
-                ne: { right: '-4px', top: '-4px', cursor: 'nesw-resize' },
-                e: { right: '-4px', top: '50%', cursor: 'ew-resize' },
-                se: { right: '-4px', bottom: '-4px', cursor: 'nwse-resize' },
-                s: { left: '50%', bottom: '-4px', cursor: 'ns-resize' },
-                sw: { left: '-4px', bottom: '-4px', cursor: 'nesw-resize' },
-                w: { left: '-4px', top: '50%', cursor: 'ew-resize' },
+            {/* Blue outline */}
+            <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
+
+            {/* Corner resize handles - diamond shaped */}
+            {['nw', 'ne', 'se', 'sw'].map(handle => {
+              const positions: Record<string, { left?: string; right?: string; top?: string; bottom?: string }> = {
+                nw: { left: '0', top: '0' },
+                ne: { right: '0', top: '0' },
+                se: { right: '0', bottom: '0' },
+                sw: { left: '0', bottom: '0' },
               }
               const pos = positions[handle]
               return (
                 <div
                   key={handle}
-                  className="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2"
+                  className="absolute w-3 h-3 bg-white border-2 border-blue-500 -translate-x-1/2 -translate-y-1/2"
                   style={{
                     ...pos,
-                    transform: pos.left === '50%' || pos.top === '50%' ? 'translate(-50%, -50%)' : undefined,
+                    left: pos.left === '0' ? '0' : undefined,
+                    right: pos.right === '0' ? '0' : undefined,
+                    top: pos.top === '0' ? '0' : undefined,
+                    bottom: pos.bottom === '0' ? '0' : undefined,
+                    transform: `translate(${pos.left === '0' ? '-50%' : '50%'}, ${pos.top === '0' ? '-50%' : '50%'}) rotate(45deg)`,
+                    cursor: handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
                   }}
                   onMouseDown={(e) => handleResizeStart(e, element.id, handle)}
                   onTouchStart={(e) => handleResizeStart(e, element.id, handle)}
@@ -457,14 +466,27 @@ export default function CanvasEditor({
               )
             })}
 
-            {/* Rotation handle */}
+            {/* Rotate button - left side */}
             <div
-              className="absolute -top-8 left-1/2 -translate-x-1/2 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center cursor-alias"
+              className="absolute -left-10 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-alias hover:bg-gray-50"
               onMouseDown={(e) => handleRotateStart(e, element.id)}
               onTouchStart={(e) => handleRotateStart(e, element.id)}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+            </div>
+
+            {/* Delete button - right side */}
+            <div
+              className="absolute -right-10 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteElement(element.id)
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
               </svg>
             </div>
           </>

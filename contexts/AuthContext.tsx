@@ -19,9 +19,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+
+  let supabase: ReturnType<typeof createClient> | null = null
+  try {
+    supabase = createClient()
+  } catch {
+    // Supabase not configured
+  }
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
       setSession(data.session)
@@ -39,9 +50,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [])
 
   const signInWithGoogle = async () => {
+    if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -51,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithApple = async () => {
+    if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
@@ -60,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
   }
 

@@ -36,27 +36,27 @@ interface CanvasEditorProps {
   recipientName?: string
 }
 
-const MOBILE_WIDTH = 280
-const MOBILE_HEIGHT = 580
-const DESKTOP_WIDTH = 1000
-const DESKTOP_HEIGHT = 600
+const MOBILE_WIDTH = 220
+const MOBILE_HEIGHT = 476
+const DESKTOP_WIDTH = 800
+const DESKTOP_HEIGHT = 500
 
 export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop' = 'mobile'): CanvasElement[] {
   const elements: CanvasElement[] = []
 
   if (mode === 'mobile') {
-    const TOP_OFFSET = 50 // Account for Dynamic Island
+    const TOP_OFFSET = 40 // Account for Dynamic Island
 
-    // Position photos in a scattered layout (larger for 280x580 canvas)
+    // Position photos in a scattered layout
     for (let i = 0; i < photoCount; i++) {
       elements.push({
         id: `photo-${i}`,
         type: 'photo',
         photoIndex: i,
-        x: 30 + (i % 2) * 110,
-        y: TOP_OFFSET + 10 + Math.floor(i / 2) * 120,
-        width: 90,
-        height: 90,
+        x: 30 + (i % 2) * 80,
+        y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+        width: 70,
+        height: 70,
         rotation: (i % 2 === 0 ? -5 : 5),
         zIndex: i + 1,
       })
@@ -67,9 +67,9 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
       id: 'text-1',
       type: 'text',
       x: 10,
-      y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 100,
-      width: 260,
-      height: 70,
+      y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
+      width: 200,
+      height: 60,
       rotation: 0,
       zIndex: photoCount + 1,
     })
@@ -78,10 +78,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
     elements.push({
       id: 'buttons-1',
       type: 'buttons',
-      x: 50,
-      y: photoCount > 0 ? TOP_OFFSET + 340 : TOP_OFFSET + 190,
-      width: 180,
-      height: 45,
+      x: 30,
+      y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
+      width: 160,
+      height: 40,
       rotation: 0,
       zIndex: photoCount + 2,
     })
@@ -92,24 +92,24 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
         id: 'spotify-1',
         type: 'spotify',
         x: 10,
-        y: TOP_OFFSET + 420,
-        width: 260,
-        height: 70,
+        y: TOP_OFFSET + 310,
+        width: 200,
+        height: 60,
         rotation: 0,
         zIndex: photoCount + 3,
       })
     }
   } else {
-    // Desktop layout - larger canvas (1000x600)
+    // Desktop layout - larger canvas (800x500)
     for (let i = 0; i < photoCount; i++) {
       elements.push({
         id: `photo-${i}`,
         type: 'photo',
         photoIndex: i,
-        x: 50 + (i % 4) * 220,
-        y: 50 + Math.floor(i / 4) * 220,
-        width: 180,
-        height: 180,
+        x: 40 + (i % 4) * 180,
+        y: 40 + Math.floor(i / 4) * 180,
+        width: 150,
+        height: 150,
         rotation: (i % 2 === 0 ? -3 : 3),
         zIndex: i + 1,
       })
@@ -119,10 +119,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
     elements.push({
       id: 'text-1',
       type: 'text',
-      x: 50,
-      y: photoCount > 0 ? 300 : 120,
-      width: 600,
-      height: 90,
+      x: 40,
+      y: photoCount > 0 ? 260 : 100,
+      width: 500,
+      height: 80,
       rotation: 0,
       zIndex: photoCount + 1,
     })
@@ -131,10 +131,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
     elements.push({
       id: 'buttons-1',
       type: 'buttons',
-      x: 400,
-      y: photoCount > 0 ? 420 : 240,
-      width: 220,
-      height: 55,
+      x: 300,
+      y: photoCount > 0 ? 360 : 200,
+      width: 200,
+      height: 50,
       rotation: 0,
       zIndex: photoCount + 2,
     })
@@ -144,10 +144,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
       elements.push({
         id: 'spotify-1',
         type: 'spotify',
-        x: 50,
-        y: photoCount > 0 ? 420 : 360,
-        width: 280,
-        height: 90,
+        x: 40,
+        y: photoCount > 0 ? 360 : 300,
+        width: 220,
+        height: 80,
         rotation: 0,
         zIndex: photoCount + 3,
       })
@@ -210,7 +210,7 @@ export default function CanvasEditor({
   // Update elements when photos change - for both modes
   useEffect(() => {
     const updateElementsWithPhotos = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
-      const TOP_OFFSET = mode === 'mobile' ? 50 : 0
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
       const existingPhotoIds = prev.filter(e => e.type === 'photo').map(e => e.photoIndex)
       const newElements = [...prev]
 
@@ -222,10 +222,10 @@ export default function CanvasEditor({
               id: `photo-${i}`,
               type: 'photo',
               photoIndex: i,
-              x: 30 + (i % 2) * 110,
-              y: TOP_OFFSET + 10 + Math.floor(i / 2) * 120,
-              width: 90,
-              height: 90,
+              x: 30 + (i % 2) * 80,
+              y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+              width: 70,
+              height: 70,
               rotation: (i % 2 === 0 ? -5 : 5),
               zIndex: newElements.length + 1,
             })
@@ -234,10 +234,10 @@ export default function CanvasEditor({
               id: `photo-${i}`,
               type: 'photo',
               photoIndex: i,
-              x: 50 + (i % 4) * 220,
-              y: 50 + Math.floor(i / 4) * 220,
-              width: 180,
-              height: 180,
+              x: 40 + (i % 4) * 180,
+              y: 40 + Math.floor(i / 4) * 180,
+              width: 150,
+              height: 150,
               rotation: (i % 2 === 0 ? -3 : 3),
               zIndex: newElements.length + 1,
             })
@@ -264,16 +264,16 @@ export default function CanvasEditor({
       if (hasText && hasButtons) return prev
 
       const newElements = [...prev]
-      const TOP_OFFSET = mode === 'mobile' ? 50 : 0
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
 
       if (!hasText) {
         newElements.push({
           id: 'text-1',
           type: 'text',
-          x: mode === 'mobile' ? 10 : 50,
-          y: mode === 'mobile' ? TOP_OFFSET + 250 : 300,
-          width: mode === 'mobile' ? 260 : 600,
-          height: mode === 'mobile' ? 70 : 90,
+          x: mode === 'mobile' ? 10 : 40,
+          y: mode === 'mobile' ? TOP_OFFSET + 180 : 260,
+          width: mode === 'mobile' ? 200 : 500,
+          height: mode === 'mobile' ? 60 : 80,
           rotation: 0,
           zIndex: newElements.length + 1,
         })
@@ -283,10 +283,10 @@ export default function CanvasEditor({
         newElements.push({
           id: 'buttons-1',
           type: 'buttons',
-          x: mode === 'mobile' ? 50 : 400,
-          y: mode === 'mobile' ? TOP_OFFSET + 340 : 420,
-          width: mode === 'mobile' ? 180 : 220,
-          height: mode === 'mobile' ? 45 : 55,
+          x: mode === 'mobile' ? 30 : 300,
+          y: mode === 'mobile' ? TOP_OFFSET + 250 : 360,
+          width: mode === 'mobile' ? 160 : 200,
+          height: mode === 'mobile' ? 40 : 50,
           rotation: 0,
           zIndex: newElements.length + 1,
         })
@@ -303,16 +303,16 @@ export default function CanvasEditor({
   useEffect(() => {
     const addOrRemoveSpotify = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
       const hasSpotify = prev.some(e => e.type === 'spotify')
-      const TOP_OFFSET = mode === 'mobile' ? 50 : 0
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
 
       if (spotifyLink && !hasSpotify) {
         return [...prev, {
           id: 'spotify-1',
           type: 'spotify' as const,
-          x: mode === 'mobile' ? 10 : 50,
-          y: mode === 'mobile' ? TOP_OFFSET + 420 : 420,
-          width: mode === 'mobile' ? 260 : 280,
-          height: mode === 'mobile' ? 70 : 90,
+          x: mode === 'mobile' ? 10 : 40,
+          y: mode === 'mobile' ? TOP_OFFSET + 310 : 360,
+          width: mode === 'mobile' ? 200 : 220,
+          height: mode === 'mobile' ? 60 : 80,
           rotation: 0,
           zIndex: prev.length + 1,
         }]

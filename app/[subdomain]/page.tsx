@@ -134,10 +134,13 @@ export default function ValentinePage() {
   const fontSize = valentine.font_size || 16
 
   // Calculate scale to fit screen while maintaining aspect ratio
-  const [scale, setScale] = useState(1)
+  const [scale, setScale] = useState(1.5)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const calculateScale = () => {
+      if (typeof window === 'undefined') return
       const screenWidth = window.innerWidth
       const screenHeight = window.innerHeight
       const scaleX = (screenWidth - 32) / MOBILE_WIDTH // 32px padding
@@ -150,8 +153,10 @@ export default function ValentinePage() {
   }, [])
 
   const renderPhoto = (element: CanvasElement) => {
-    const photo = valentine.photos[element.photoIndex || 0]
-    if (!photo) return null
+    const photoIndex = element.photoIndex ?? 0
+    if (!valentine.photos || photoIndex >= valentine.photos.length) return null
+    const photo = valentine.photos[photoIndex]
+    if (!photo || !photo.photo_url) return null
 
     const isPolaroid = valentine.photo_style === 'polaroid'
 
@@ -301,8 +306,8 @@ export default function ValentinePage() {
     }
   }
 
-  // If no canvas layout, render fallback
-  if (!canvasLayout || elements.length === 0) {
+  // If not mounted yet or no canvas layout, render fallback
+  if (!mounted || !canvasLayout || elements.length === 0) {
     return (
       <main
         className="min-h-screen"

@@ -34,6 +34,7 @@ interface CanvasEditorProps {
   onCanvasStateChange?: (state: CanvasState) => void
   viewMode?: 'mobile' | 'desktop'
   recipientName?: string
+  fontSize?: number
 }
 
 const MOBILE_WIDTH = 220
@@ -175,6 +176,7 @@ export default function CanvasEditor({
   onCanvasStateChange,
   viewMode = 'mobile',
   recipientName = '',
+  fontSize = 16,
 }: CanvasEditorProps) {
   const themeColors = THEMES[theme]
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -195,16 +197,28 @@ export default function CanvasEditor({
   const elements = viewMode === 'mobile' ? mobileElements : desktopElements
   const setElements = viewMode === 'mobile' ? setMobileElements : setDesktopElements
 
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [isRotating, setIsRotating] = useState(false)
   const [isResizing, setIsResizing] = useState<string | null>(null)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [elementStart, setElementStart] = useState({ x: 0, y: 0, width: 0, height: 0, rotation: 0 })
+  const [primarySelectedId, setPrimarySelectedId] = useState<string | null>(null)
+
+  // Refs for drag state to avoid stale closures
+  const selectedIdsRef = useRef<string[]>([])
+  const elementsStartRef = useRef<Record<string, { x: number; y: number }>>({})
+  const didDragRef = useRef(false)
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedIdsRef.current = selectedIds
+  }, [selectedIds])
 
   // Clear selection when switching view modes
   useEffect(() => {
-    setSelectedId(null)
+    setSelectedIds([])
+    setPrimarySelectedId(null)
   }, [viewMode])
 
   // Update elements when photos change - for both modes
@@ -345,17 +359,19 @@ export default function CanvasEditor({
     }
   }, [])
 
-  const bringToFront = useCallback((id: string) => {
+  const bringToFront = useCallback((ids: string[]) => {
     setElements(prev => {
       const maxZ = Math.max(...prev.map(e => e.zIndex))
-      return prev.map(e => e.id === id ? { ...e, zIndex: maxZ + 1 } : e)
+      return prev.map((e, i) => ids.includes(e.id) ? { ...e, zIndex: maxZ + 1 + ids.indexOf(e.id) } : e)
     })
   }, [])
 
   const handleDeleteElement = useCallback((id: string) => {
-    setElements(prev => prev.filter(e => e.id !== id))
-    setSelectedId(null)
-  }, [])
+    // Delete all selected elements if the deleted one is selected
+    setElements(prev => prev.filter(e => !selectedIds.includes(e.id)))
+    setSelectedIds([])
+    setPrimarySelectedId(null)
+  }, [selectedIds])
 
   // Drag handlers
   const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string) => {
@@ -364,30 +380,74 @@ export default function CanvasEditor({
     const element = elements.find(el => el.id === id)
     if (!element) return
 
-    setSelectedId(id)
+    const shiftKey = 'shiftKey' in e ? e.shiftKey : false
+    const currentSelectedIds = selectedIdsRef.current
+
+    // Determine what items will be selected/dragged
+    let dragIds: string[]
+    if (shiftKey) {
+      // Shift held - toggle this item in selection
+      if (currentSelectedIds.includes(id)) {
+        // Remove from selection
+        dragIds = currentSelectedIds.filter(sid => sid !== id)
+      } else {
+        // Add to selection
+        dragIds = [...currentSelectedIds, id]
+      }
+    } else if (currentSelectedIds.includes(id)) {
+      // Clicking already selected item without shift - keep all selected
+      dragIds = currentSelectedIds
+    } else {
+      // Clicking unselected item without shift - select only this
+      dragIds = [id]
+    }
+
+    setPrimarySelectedId(id)
     setIsDragging(true)
+    didDragRef.current = false
     setDragStart(pos)
     setElementStart({ x: element.x, y: element.y, width: element.width, height: element.height, rotation: element.rotation })
-    bringToFront(id)
+
+    // Store starting positions for items that will be dragged
+    const starts: Record<string, { x: number; y: number }> = {}
+    dragIds.forEach(sid => {
+      const el = elements.find(e => e.id === sid)
+      if (el) starts[sid] = { x: el.x, y: el.y }
+    })
+    elementsStartRef.current = starts
+
+    // Temporarily set these as selected for dragging (will be confirmed in onClick)
+    selectedIdsRef.current = dragIds
+
+    bringToFront(dragIds)
   }, [elements, getMousePosition, bringToFront])
 
   const canvasWidth = viewMode === 'mobile' ? MOBILE_WIDTH : DESKTOP_WIDTH
   const canvasHeight = viewMode === 'mobile' ? MOBILE_HEIGHT : DESKTOP_HEIGHT
 
   const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isDragging || !selectedId) return
+    if (!isDragging || selectedIdsRef.current.length === 0) return
 
     const pos = getMousePosition(e)
     const deltaX = pos.x - dragStart.x
     const deltaY = pos.y - dragStart.y
 
-    setElements(prev => prev.map(el =>
-      el.id === selectedId
-        ? { ...el, x: Math.max(0, Math.min(canvasWidth - el.width, elementStart.x + deltaX)),
-                   y: Math.max(0, Math.min(canvasHeight - el.height, elementStart.y + deltaY)) }
-        : el
-    ))
-  }, [isDragging, selectedId, dragStart, elementStart, getMousePosition, canvasWidth, canvasHeight])
+    // Mark that actual dragging occurred (more than 3px movement)
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      didDragRef.current = true
+    }
+
+    setElements(prev => prev.map(el => {
+      if (!selectedIdsRef.current.includes(el.id)) return el
+      const start = elementsStartRef.current[el.id]
+      if (!start) return el
+      return {
+        ...el,
+        x: Math.max(0, Math.min(canvasWidth - el.width, start.x + deltaX)),
+        y: Math.max(0, Math.min(canvasHeight - el.height, start.y + deltaY))
+      }
+    }))
+  }, [isDragging, dragStart, getMousePosition, canvasWidth, canvasHeight])
 
   // Rotation handlers
   const [startAngle, setStartAngle] = useState(0)
@@ -403,7 +463,8 @@ export default function CanvasEditor({
     const centerY = element.y + element.height / 2
     const initialAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * (180 / Math.PI)
 
-    setSelectedId(id)
+    setSelectedIds([id])
+    setPrimarySelectedId(id)
     setIsRotating(true)
     setHasRotateMoved(false)
     setStartAngle(initialAngle)
@@ -412,7 +473,7 @@ export default function CanvasEditor({
   }, [elements, getMousePosition])
 
   const handleRotateMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isRotating || !selectedId) return
+    if (!isRotating || !primarySelectedId) return
 
     const pos = getMousePosition(e)
 
@@ -430,9 +491,9 @@ export default function CanvasEditor({
     const deltaAngle = currentAngle - startAngle
 
     setElements(prev => prev.map(el =>
-      el.id === selectedId ? { ...el, rotation: elementStart.rotation + deltaAngle } : el
+      el.id === primarySelectedId ? { ...el, rotation: elementStart.rotation + deltaAngle } : el
     ))
-  }, [isRotating, selectedId, elementStart, startAngle, dragStart, hasRotateMoved, getMousePosition])
+  }, [isRotating, primarySelectedId, elementStart, startAngle, dragStart, hasRotateMoved, getMousePosition])
 
   // Resize handlers
   const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string, handle: string) => {
@@ -440,21 +501,22 @@ export default function CanvasEditor({
     const element = elements.find(el => el.id === id)
     if (!element) return
 
-    setSelectedId(id)
+    setSelectedIds([id])
+    setPrimarySelectedId(id)
     setIsResizing(handle)
     setDragStart(getMousePosition(e))
     setElementStart({ x: element.x, y: element.y, width: element.width, height: element.height, rotation: element.rotation })
   }, [elements, getMousePosition])
 
   const handleResizeMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isResizing || !selectedId) return
+    if (!isResizing || !primarySelectedId) return
 
     const pos = getMousePosition(e)
     const deltaX = pos.x - dragStart.x
     const deltaY = pos.y - dragStart.y
 
     setElements(prev => prev.map(el => {
-      if (el.id !== selectedId) return el
+      if (el.id !== primarySelectedId) return el
 
       let newWidth = elementStart.width
       let newHeight = elementStart.height
@@ -485,7 +547,7 @@ export default function CanvasEditor({
 
       return { ...el, x: newX, y: newY, width: newWidth, height: newHeight }
     }))
-  }, [isResizing, selectedId, dragStart, elementStart, getMousePosition])
+  }, [isResizing, primarySelectedId, dragStart, elementStart, getMousePosition])
 
   // Global mouse up handler
   const handleMouseUp = useCallback(() => {
@@ -516,7 +578,8 @@ export default function CanvasEditor({
   }, [isDragging, isRotating, isResizing, handleDragMove, handleRotateMove, handleResizeMove, handleMouseUp])
 
   const renderElement = (element: CanvasElement) => {
-    const isSelected = selectedId === element.id
+    const isSelected = selectedIds.includes(element.id)
+    const isPrimary = primarySelectedId === element.id
 
     const content = (() => {
       switch (element.type) {
@@ -545,12 +608,12 @@ export default function CanvasEditor({
         case 'text':
           // Scale font size based on element width (base width: 200)
           const textScale = element.width / 200
-          const fontSize = Math.max(10, Math.min(32, 14 * textScale))
+          const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
           return (
             <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
               <p
                 className="font-loveheart leading-relaxed text-center"
-                style={{ color: '#1a1a1a', fontSize: `${fontSize}px` }}
+                style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px` }}
               >
                 {message || 'Your message will appear here...'}
               </p>
@@ -628,17 +691,28 @@ export default function CanvasEditor({
         onTouchStart={(e) => handleDragStart(e, element.id)}
         onClick={(e) => {
           e.stopPropagation()
-          setSelectedId(element.id)
+
+          // Commit the selection that was set up in handleDragStart to React state
+          setSelectedIds([...selectedIdsRef.current])
+          setPrimarySelectedId(element.id)
+
+          // Only bring to front if it was a click (not a drag)
+          if (!didDragRef.current) {
+            bringToFront(selectedIdsRef.current)
+          }
+          didDragRef.current = false
         }}
       >
         {content}
 
-        {/* Selection handles */}
+        {/* Selection outline - shown for all selected elements */}
         {isSelected && (
-          <>
-            {/* Blue outline */}
-            <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
+          <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
+        )}
 
+        {/* Controls - only shown on primary selected element */}
+        {isPrimary && (
+          <>
             {/* Corner resize handles - square */}
             {['nw', 'ne', 'se', 'sw'].map(handle => {
               const positions: Record<string, React.CSSProperties> = {
@@ -715,17 +789,20 @@ export default function CanvasEditor({
               height: canvasHeight,
               backgroundColor: themeColors.bgColor,
             }}
-            onClick={() => setSelectedId(null)}
+            onClick={() => { setSelectedIds([]); setPrimarySelectedId(null) }}
           >
             {elements.map(renderElement)}
           </div>
         </div>
 
         {/* Info */}
-        {selectedId && (
+        {selectedIds.length > 0 && (
           <div className="mt-2 text-xs text-gray-500">
             {(() => {
-              const el = elements.find(e => e.id === selectedId)
+              if (selectedIds.length > 1) {
+                return `${selectedIds.length} items selected`
+              }
+              const el = elements.find(e => e.id === selectedIds[0])
               if (!el) return null
               return `X: ${Math.round(el.x)} Y: ${Math.round(el.y)} R: ${Math.round(el.rotation)}°`
             })()}
@@ -752,17 +829,20 @@ export default function CanvasEditor({
             height: canvasHeight,
             backgroundColor: themeColors.bgColor,
           }}
-          onClick={() => setSelectedId(null)}
+          onClick={() => { setSelectedIds([]); setPrimarySelectedId(null) }}
         >
           {elements.map(renderElement)}
         </div>
       </div>
 
       {/* Info */}
-      {selectedId && (
+      {selectedIds.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
           {(() => {
-            const el = elements.find(e => e.id === selectedId)
+            if (selectedIds.length > 1) {
+              return `${selectedIds.length} items selected`
+            }
+            const el = elements.find(e => e.id === selectedIds[0])
             if (!el) return null
             return `X: ${Math.round(el.x)} Y: ${Math.round(el.y)} R: ${Math.round(el.rotation)}°`
           })()}

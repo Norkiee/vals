@@ -25,6 +25,7 @@ export default function CreatePage() {
   const [theme, setTheme] = useState<ThemeKey>('pink')
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('polaroid')
   const [font, setFont] = useState<string>(FONTS[0].name)
+  const [fontSize, setFontSize] = useState<number>(16)
   const [canvasState, setCanvasState] = useState<CanvasState>({ mobile: [], desktop: [] })
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
   const [spotifyMeta, setSpotifyMeta] = useState<SpotifyMetadata | null>(null)
@@ -247,16 +248,40 @@ export default function CreatePage() {
             </select>
           </div>
 
+          {/* Font size controls */}
+          <div className="bg-white rounded-full shadow-sm px-2 py-2.5 border border-gray-100 flex items-center gap-1">
+            <button
+              onClick={() => setFontSize(prev => Math.max(8, prev - 2))}
+              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+              title="Decrease font size"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+            <span className="text-sm font-medium w-6 text-center">{fontSize}</span>
+            <button
+              onClick={() => setFontSize(prev => Math.min(48, prev + 2))}
+              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+              title="Increase font size"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+
           {/* Photo style toggle */}
           <div className="bg-white rounded-full shadow-sm px-5 py-2.5 border border-gray-100">
             <PhotoStyleToggle value={photoStyle} onChange={setPhotoStyle} />
           </div>
 
           {/* View mode toggle */}
-          <div className="bg-white rounded-full shadow-sm p-1.5 border border-gray-100 flex gap-1.5">
+          <div className="bg-white rounded-full shadow-sm px-2.5 py-1.5 border border-gray-100 flex gap-1">
             <button
               onClick={() => setViewMode('mobile')}
-              className={`p-2 rounded-full transition-colors ${viewMode === 'mobile' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              className={`p-1 rounded-full transition-colors ${viewMode === 'mobile' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
               title="Mobile view"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -266,7 +291,7 @@ export default function CreatePage() {
             </button>
             <button
               onClick={() => setViewMode('desktop')}
-              className={`p-2 rounded-full transition-colors ${viewMode === 'desktop' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              className={`p-1 rounded-full transition-colors ${viewMode === 'desktop' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
               title="Desktop view"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -291,6 +316,7 @@ export default function CreatePage() {
             onCanvasStateChange={setCanvasState}
             viewMode={viewMode}
             recipientName={recipientName}
+            fontSize={fontSize}
           />
         </div>
       </div>

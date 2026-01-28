@@ -240,15 +240,25 @@ export default function Preview({
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, item)}
         onDragEnd={handleDragEnd}
-        onMouseDown={(e) => e.stopPropagation()}
-        className={`flex justify-center py-1 cursor-grab active:cursor-grabbing transition-all select-none relative group ${
+        className={`flex items-center py-1 cursor-grab active:cursor-grabbing transition-all select-none group hover:bg-black/5 rounded-lg mx-1 ${
           isDragging ? 'opacity-40 scale-95' : ''
-        } ${isDragOver ? 'border-t-2 border-pink-400' : ''}`}
+        } ${isDragOver ? 'bg-pink-100 border-2 border-dashed border-pink-400' : ''}`}
       >
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-gray-400 text-xs">
-          ⋮⋮
+        {/* Drag handle - always visible */}
+        <div className="flex-shrink-0 w-6 flex items-center justify-center text-gray-300 group-hover:text-gray-500 transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="8" cy="6" r="2" />
+            <circle cx="16" cy="6" r="2" />
+            <circle cx="8" cy="12" r="2" />
+            <circle cx="16" cy="12" r="2" />
+            <circle cx="8" cy="18" r="2" />
+            <circle cx="16" cy="18" r="2" />
+          </svg>
         </div>
-        {content}
+        <div className="flex-1 flex justify-center">
+          {content}
+        </div>
+        <div className="w-6" /> {/* Spacer for balance */}
       </div>
     )
   }

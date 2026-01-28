@@ -9,7 +9,7 @@ export default function Home() {
       {/* Photos arrangement */}
       <div className="relative w-full max-w-xl h-72 md:h-96 -mb-12">
         {/* Left photo */}
-        <div className="absolute left-8 md:left-16 top-8 transform -rotate-12 z-10">
+        <div className="absolute left-8 md:left-16 top-8 transform -rotate-12 z-10 animate-float-slow">
           <div className="w-40 md:w-52 aspect-square relative">
             <Image
               src="/photo.png"
@@ -21,7 +21,7 @@ export default function Home() {
         </div>
 
         {/* Center music card */}
-        <div className="absolute left-1/2 top-0 transform -translate-x-1/2 z-20">
+        <div className="absolute left-1/2 top-0 transform -translate-x-1/2 z-20 animate-float">
           <div className="w-44 md:w-56 aspect-square relative">
             <Image
               src="/music.png"
@@ -33,7 +33,7 @@ export default function Home() {
         </div>
 
         {/* Right photo */}
-        <div className="absolute right-8 md:right-16 top-12 transform rotate-12 z-10">
+        <div className="absolute right-8 md:right-16 top-12 transform rotate-12 z-10 animate-float-slower">
           <div className="w-40 md:w-52 aspect-square relative">
             <Image
               src="/photo1.png"

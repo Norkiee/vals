@@ -1,10 +1,27 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-/* eslint-disable @next/next/no-img-element */
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
 import SpotifyCard from '@/components/SpotifyCard'
+
+interface CanvasElement {
+  id: string
+  type: 'photo' | 'spotify' | 'text' | 'buttons'
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+  zIndex: number
+  photoIndex?: number
+}
+
+interface CanvasState {
+  mobile: CanvasElement[]
+  desktop: CanvasElement[]
+}
 
 interface ValentineData {
   id: string
@@ -16,12 +33,16 @@ interface ValentineData {
   spotify_title: string | null
   spotify_artist: string | null
   spotify_thumbnail: string | null
-  section_order: string | null
   theme: ThemeKey
   photo_style: PhotoStyle
   font_family: string
+  font_size: number
+  canvas_layout: CanvasState | null
   photos: { photo_url: string; display_order: number }[]
 }
+
+const MOBILE_WIDTH = 220
+const MOBILE_HEIGHT = 476
 
 export default function ValentinePage() {
   const params = useParams()
@@ -31,6 +52,16 @@ export default function ValentinePage() {
   const [error, setError] = useState<string | null>(null)
   const [responded, setResponded] = useState(false)
   const [response, setResponse] = useState<boolean | null>(null)
+  const [isMobile, setIsMobile] = useState(true)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     async function fetchValentine() {
@@ -97,174 +128,300 @@ export default function ValentinePage() {
     )
   }
 
-  const themeColors = THEMES[valentine.theme]
+  const themeColors = THEMES[valentine.theme] || THEMES.pink
+  const canvasLayout = valentine.canvas_layout
+  const elements = canvasLayout?.mobile || []
+  const fontSize = valentine.font_size || 16
 
-  // Parse item order from database or generate default
-  const getDefaultItemOrder = () => {
-    const items: string[] = []
-    for (let i = 0; i < valentine.photos.length; i++) {
-      items.push(`photo:${i}`)
-    }
-    items.push('message')
-    if (valentine.spotify_link) {
-      items.push('spotify')
-    }
-    return items
-  }
+  // Scale factor for rendering on actual screen
+  const scale = isMobile ? Math.min(window.innerWidth / MOBILE_WIDTH, 1.8) : 1.5
 
-  const itemOrder: string[] = valentine.section_order
-    ? valentine.section_order.split(',')
-    : getDefaultItemOrder()
-
-  const renderPhoto = (photoIndex: number) => {
-    const photo = valentine.photos[photoIndex]
+  const renderPhoto = (element: CanvasElement) => {
+    const photo = valentine.photos[element.photoIndex || 0]
     if (!photo) return null
+
+    const isPolaroid = valentine.photo_style === 'polaroid'
 
     return (
       <div
-        key={`photo-${photoIndex}`}
-        className={`relative inline-block ${
-          valentine.photo_style === 'polaroid'
-            ? 'polaroid'
-            : 'hearts-border p-2 bg-white'
-        }`}
+        key={element.id}
+        className="absolute"
         style={{
-          transform: valentine.photo_style === 'polaroid'
-            ? `rotate(${photoIndex % 2 === 0 ? -2 : 2}deg)`
-            : 'none',
-          ['--theme-primary' as string]: themeColors.primary,
+          left: element.x * scale,
+          top: element.y * scale,
+          width: element.width * scale,
+          height: element.height * scale,
+          transform: `rotate(${element.rotation}deg)`,
+          zIndex: element.zIndex,
         }}
       >
-        <div className="w-28 h-28 md:w-36 md:h-36 relative overflow-hidden">
+        <div
+          className={`w-full h-full ${
+            isPolaroid
+              ? 'bg-white p-1 pb-3 shadow-lg'
+              : 'border-2 border-dashed p-1 bg-white'
+          }`}
+          style={{
+            borderColor: isPolaroid ? undefined : themeColors.primary,
+          }}
+        >
           <img
             src={photo.photo_url}
-            alt={`Photo ${photoIndex + 1}`}
-            className="w-full h-full object-cover grayscale"
+            alt="Photo"
+            className="w-full h-full object-cover"
           />
         </div>
       </div>
     )
   }
 
-  const renderMessage = () => (
-    <div key="message" className="mb-6">
-      {valentine.message && (
-        <div className="text-center mb-4 px-4">
-          <p className="font-loveheart text-xl md:text-2xl leading-relaxed text-gray-800">
-            {valentine.message}
-          </p>
-        </div>
-      )}
+  const renderText = (element: CanvasElement) => {
+    if (!valentine.message) return null
 
-      {!responded ? (
-        <div className="text-center">
-          <div className="flex justify-center gap-4">
+    return (
+      <div
+        key={element.id}
+        className="absolute"
+        style={{
+          left: element.x * scale,
+          top: element.y * scale,
+          width: element.width * scale,
+          zIndex: element.zIndex,
+        }}
+      >
+        <p
+          className="font-loveheart text-gray-800 leading-relaxed"
+          style={{ fontSize: fontSize * scale * 0.7 }}
+        >
+          {valentine.message}
+        </p>
+      </div>
+    )
+  }
+
+  const renderButtons = (element: CanvasElement) => {
+    return (
+      <div
+        key={element.id}
+        className="absolute"
+        style={{
+          left: element.x * scale,
+          top: element.y * scale,
+          width: element.width * scale,
+          zIndex: element.zIndex,
+        }}
+      >
+        {!responded ? (
+          <div className="flex gap-2">
             <button
               onClick={() => handleResponse(true)}
-              className="px-10 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transition-all"
+              className="flex-1 py-2 rounded-full text-white font-medium text-sm shadow-md hover:shadow-lg transition-all"
               style={{ backgroundColor: themeColors.primary }}
             >
               Yes
             </button>
             <button
               onClick={() => handleResponse(false)}
-              className="px-10 py-3 rounded-full border-2 font-medium text-lg hover:bg-white/50 transition-all"
+              className="flex-1 py-2 rounded-full border-2 font-medium text-sm hover:bg-white/50 transition-all"
               style={{ borderColor: themeColors.primary, color: themeColors.primary }}
             >
               No
             </button>
           </div>
-        </div>
-      ) : (
-        <div className="text-center">
-          <div className="bg-white/80 rounded-2xl p-6 shadow-lg">
+        ) : (
+          <div className="text-center bg-white/80 rounded-xl p-3 shadow-md">
             {response ? (
               <>
-                <span className="text-4xl mb-2 block">💕</span>
-                <p className="font-loveheart text-2xl text-gray-800">Yay! That&apos;s amazing!</p>
+                <span className="text-2xl mb-1 block">💕</span>
+                <p className="font-loveheart text-lg text-gray-800">Yay!</p>
               </>
             ) : (
               <>
-                <span className="text-4xl mb-2 block">💔</span>
-                <p className="font-loveheart text-2xl text-gray-800">Maybe next time...</p>
+                <span className="text-2xl mb-1 block">💔</span>
+                <p className="font-loveheart text-lg text-gray-800">Maybe next time</p>
               </>
             )}
           </div>
-        </div>
-      )}
-    </div>
-  )
+        )}
+      </div>
+    )
+  }
 
-  const renderSpotify = () => (
-    valentine.spotify_link ? (
-      <div key="spotify" className="mb-6 px-4">
+  const renderSpotify = (element: CanvasElement) => {
+    if (!valentine.spotify_link) return null
+
+    return (
+      <div
+        key={element.id}
+        className="absolute"
+        style={{
+          left: element.x * scale,
+          top: element.y * scale,
+          width: element.width * scale,
+          zIndex: element.zIndex,
+        }}
+      >
         <SpotifyCard
           spotifyLink={valentine.spotify_link}
           title={valentine.spotify_title || undefined}
           artist={valentine.spotify_artist || undefined}
           thumbnail={valentine.spotify_thumbnail}
           themeColor={themeColors.primary}
+          compact
         />
       </div>
-    ) : null
-  )
-
-  const renderItem = (item: string) => {
-    if (item.startsWith('photo:')) {
-      const index = parseInt(item.split(':')[1])
-      return renderPhoto(index)
-    } else if (item === 'message') {
-      return renderMessage()
-    } else if (item === 'spotify') {
-      return renderSpotify()
-    }
-    return null
+    )
   }
 
-  // Group consecutive photos for display
-  const renderContent = () => {
-    const elements: React.ReactElement[] = []
-    let photoGroup: string[] = []
+  const renderElement = (element: CanvasElement) => {
+    switch (element.type) {
+      case 'photo':
+        return renderPhoto(element)
+      case 'text':
+        return renderText(element)
+      case 'buttons':
+        return renderButtons(element)
+      case 'spotify':
+        return renderSpotify(element)
+      default:
+        return null
+    }
+  }
 
-    const flushPhotoGroup = () => {
-      if (photoGroup.length > 0) {
-        elements.push(
-          <div key={`photo-group-${elements.length}`} className="mb-6 flex justify-center gap-3 flex-wrap">
-            {photoGroup.map(item => renderItem(item))}
+  // If no canvas layout, render fallback
+  if (!canvasLayout || elements.length === 0) {
+    return (
+      <main
+        className="min-h-screen"
+        style={{ backgroundColor: themeColors.bgColor }}
+      >
+        <div className="max-w-md mx-auto px-4 py-8">
+          {/* Photos */}
+          {valentine.photos.length > 0 && (
+            <div className="mb-6 flex justify-center gap-3 flex-wrap">
+              {valentine.photos.map((photo, i) => (
+                <div
+                  key={i}
+                  className={`relative ${
+                    valentine.photo_style === 'polaroid'
+                      ? 'bg-white p-2 pb-6 shadow-lg'
+                      : 'border-2 border-dashed p-2 bg-white'
+                  }`}
+                  style={{
+                    transform: `rotate(${i % 2 === 0 ? -2 : 2}deg)`,
+                    borderColor: valentine.photo_style !== 'polaroid' ? themeColors.primary : undefined,
+                  }}
+                >
+                  <div className="w-28 h-28 overflow-hidden">
+                    <img
+                      src={photo.photo_url}
+                      alt={`Photo ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Message */}
+          {valentine.message && (
+            <div className="text-center mb-6 px-4">
+              <p
+                className="font-loveheart leading-relaxed text-gray-800"
+                style={{ fontSize: `${fontSize}px` }}
+              >
+                {valentine.message}
+              </p>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="mb-6">
+            {!responded ? (
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => handleResponse(true)}
+                  className="px-10 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transition-all"
+                  style={{ backgroundColor: themeColors.primary }}
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => handleResponse(false)}
+                  className="px-10 py-3 rounded-full border-2 font-medium text-lg hover:bg-white/50 transition-all"
+                  style={{ borderColor: themeColors.primary, color: themeColors.primary }}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="bg-white/80 rounded-2xl p-6 shadow-lg inline-block">
+                  {response ? (
+                    <>
+                      <span className="text-4xl mb-2 block">💕</span>
+                      <p className="font-loveheart text-2xl text-gray-800">Yay! That&apos;s amazing!</p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl mb-2 block">💔</span>
+                      <p className="font-loveheart text-2xl text-gray-800">Maybe next time...</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )
-        photoGroup = []
-      }
-    }
 
-    for (const item of itemOrder) {
-      if (item.startsWith('photo:')) {
-        photoGroup.push(item)
-      } else {
-        flushPhotoGroup()
-        const content = renderItem(item)
-        if (content) {
-          elements.push(content)
-        }
-      }
-    }
-    flushPhotoGroup()
+          {/* Spotify */}
+          {valentine.spotify_link && (
+            <div className="mb-6 px-4">
+              <SpotifyCard
+                spotifyLink={valentine.spotify_link}
+                title={valentine.spotify_title || undefined}
+                artist={valentine.spotify_artist || undefined}
+                thumbnail={valentine.spotify_thumbnail}
+                themeColor={themeColors.primary}
+              />
+            </div>
+          )}
 
-    return elements
+          {/* From */}
+          {valentine.sender_name && (
+            <div className="text-center">
+              <p className="text-gray-600 text-sm">
+                With love from <span className="font-medium">{valentine.sender_name}</span>
+              </p>
+            </div>
+          )}
+        </div>
+      </main>
+    )
   }
 
+  // Render with canvas layout
   return (
     <main
-      className="min-h-screen"
+      className="min-h-screen flex items-center justify-center"
       style={{ backgroundColor: themeColors.bgColor }}
     >
-      <div className="max-w-md mx-auto px-4 py-8">
-        {renderContent()}
+      <div
+        className="relative"
+        style={{
+          width: MOBILE_WIDTH * scale,
+          height: MOBILE_HEIGHT * scale,
+        }}
+      >
+        {elements.map(renderElement)}
 
-        {/* From section - always at the bottom */}
+        {/* From - always at the bottom */}
         {valentine.sender_name && (
-          <div className="text-center">
-            <p className="text-gray-600 text-sm">
+          <div
+            className="absolute bottom-4 left-0 right-0 text-center"
+            style={{ zIndex: 1000 }}
+          >
+            <p className="text-gray-600 text-xs">
               With love from <span className="font-medium">{valentine.sender_name}</span>
             </p>
           </div>

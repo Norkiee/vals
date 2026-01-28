@@ -15,8 +15,9 @@ export async function POST(request: NextRequest) {
       theme,
       photoStyle,
       font,
+      fontSize,
       photos,
-      itemOrder,
+      canvasState,
       userId,
       creatorEmail,
     } = body
@@ -76,10 +77,11 @@ export async function POST(request: NextRequest) {
         spotify_title: spotifyTitle,
         spotify_artist: spotifyArtist,
         spotify_thumbnail: spotifyThumbnail,
-        section_order: itemOrder || 'message',
         theme: theme || 'pink',
         photo_style: photoStyle || 'polaroid',
         font_family: font || 'Loveheart',
+        font_size: fontSize || 16,
+        canvas_layout: canvasState || null,
         user_id: userId || null,
       })
 

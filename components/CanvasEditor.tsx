@@ -38,8 +38,8 @@ interface CanvasEditorProps {
 
 const MOBILE_WIDTH = 220
 const MOBILE_HEIGHT = 476
-const DESKTOP_WIDTH = 500
-const DESKTOP_HEIGHT = 320
+const DESKTOP_WIDTH = 800
+const DESKTOP_HEIGHT = 500
 
 export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop' = 'mobile'): CanvasElement[] {
   const elements: CanvasElement[] = []
@@ -100,16 +100,16 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
       })
     }
   } else {
-    // Desktop layout - wider canvas
+    // Desktop layout - larger canvas (800x500)
     for (let i = 0; i < photoCount; i++) {
       elements.push({
         id: `photo-${i}`,
         type: 'photo',
         photoIndex: i,
-        x: 20 + (i % 3) * 120,
-        y: 20 + Math.floor(i / 3) * 120,
-        width: 100,
-        height: 100,
+        x: 40 + (i % 4) * 180,
+        y: 40 + Math.floor(i / 4) * 180,
+        width: 150,
+        height: 150,
         rotation: (i % 2 === 0 ? -3 : 3),
         zIndex: i + 1,
       })
@@ -119,10 +119,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
     elements.push({
       id: 'text-1',
       type: 'text',
-      x: 20,
-      y: photoCount > 0 ? 160 : 60,
-      width: 300,
-      height: 60,
+      x: 40,
+      y: photoCount > 0 ? 260 : 100,
+      width: 500,
+      height: 80,
       rotation: 0,
       zIndex: photoCount + 1,
     })
@@ -131,10 +131,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
     elements.push({
       id: 'buttons-1',
       type: 'buttons',
-      x: 170,
-      y: photoCount > 0 ? 230 : 140,
-      width: 160,
-      height: 40,
+      x: 300,
+      y: photoCount > 0 ? 360 : 200,
+      width: 200,
+      height: 50,
       rotation: 0,
       zIndex: photoCount + 2,
     })
@@ -144,10 +144,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
       elements.push({
         id: 'spotify-1',
         type: 'spotify',
-        x: 20,
-        y: 230,
-        width: 140,
-        height: 60,
+        x: 40,
+        y: photoCount > 0 ? 360 : 300,
+        width: 220,
+        height: 80,
         rotation: 0,
         zIndex: photoCount + 3,
       })
@@ -234,10 +234,10 @@ export default function CanvasEditor({
               id: `photo-${i}`,
               type: 'photo',
               photoIndex: i,
-              x: 20 + (i % 3) * 120,
-              y: 20 + Math.floor(i / 3) * 120,
-              width: 100,
-              height: 100,
+              x: 40 + (i % 4) * 180,
+              y: 40 + Math.floor(i / 4) * 180,
+              width: 150,
+              height: 150,
               rotation: (i % 2 === 0 ? -3 : 3),
               zIndex: newElements.length + 1,
             })
@@ -270,10 +270,10 @@ export default function CanvasEditor({
         newElements.push({
           id: 'text-1',
           type: 'text',
-          x: mode === 'mobile' ? 10 : 20,
-          y: mode === 'mobile' ? TOP_OFFSET + 180 : 160,
-          width: mode === 'mobile' ? 200 : 300,
-          height: 60,
+          x: mode === 'mobile' ? 10 : 40,
+          y: mode === 'mobile' ? TOP_OFFSET + 180 : 260,
+          width: mode === 'mobile' ? 200 : 500,
+          height: mode === 'mobile' ? 60 : 80,
           rotation: 0,
           zIndex: newElements.length + 1,
         })
@@ -283,10 +283,10 @@ export default function CanvasEditor({
         newElements.push({
           id: 'buttons-1',
           type: 'buttons',
-          x: mode === 'mobile' ? 30 : 170,
-          y: mode === 'mobile' ? TOP_OFFSET + 250 : 230,
-          width: 160,
-          height: 40,
+          x: mode === 'mobile' ? 30 : 300,
+          y: mode === 'mobile' ? TOP_OFFSET + 250 : 360,
+          width: mode === 'mobile' ? 160 : 200,
+          height: mode === 'mobile' ? 40 : 50,
           rotation: 0,
           zIndex: newElements.length + 1,
         })
@@ -309,10 +309,10 @@ export default function CanvasEditor({
         return [...prev, {
           id: 'spotify-1',
           type: 'spotify' as const,
-          x: mode === 'mobile' ? 10 : 20,
-          y: mode === 'mobile' ? TOP_OFFSET + 310 : 230,
-          width: mode === 'mobile' ? 200 : 140,
-          height: 60,
+          x: mode === 'mobile' ? 10 : 40,
+          y: mode === 'mobile' ? TOP_OFFSET + 310 : 360,
+          width: mode === 'mobile' ? 200 : 220,
+          height: mode === 'mobile' ? 60 : 80,
           rotation: 0,
           zIndex: prev.length + 1,
         }]

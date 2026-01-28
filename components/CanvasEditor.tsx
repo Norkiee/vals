@@ -109,7 +109,7 @@ export default function CanvasEditor({
   const canvasRef = useRef<HTMLDivElement>(null)
 
   const [elements, setElements] = useState<CanvasElement[]>(() =>
-    canvasState || getDefaultCanvasState(photos.length, !!spotifyLink)
+    canvasState && canvasState.length > 0 ? canvasState : getDefaultCanvasState(photos.length, !!spotifyLink)
   )
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -149,6 +149,47 @@ export default function CanvasEditor({
     })
   }, [photos.length])
 
+  // Ensure text and buttons elements always exist
+  useEffect(() => {
+    const TOP_OFFSET = 40
+    setElements(prev => {
+      const hasText = prev.some(e => e.type === 'text')
+      const hasButtons = prev.some(e => e.type === 'buttons')
+
+      if (hasText && hasButtons) return prev
+
+      const newElements = [...prev]
+
+      if (!hasText) {
+        newElements.push({
+          id: 'text-1',
+          type: 'text',
+          x: 10,
+          y: TOP_OFFSET + 180,
+          width: 200,
+          height: 60,
+          rotation: 0,
+          zIndex: newElements.length + 1,
+        })
+      }
+
+      if (!hasButtons) {
+        newElements.push({
+          id: 'buttons-1',
+          type: 'buttons',
+          x: 30,
+          y: TOP_OFFSET + 250,
+          width: 160,
+          height: 40,
+          rotation: 0,
+          zIndex: newElements.length + 1,
+        })
+      }
+
+      return newElements
+    })
+  }, [])
+
   // Add spotify when link is added
   useEffect(() => {
     const TOP_OFFSET = 40
@@ -166,7 +207,7 @@ export default function CanvasEditor({
     } else if (!spotifyLink) {
       setElements(prev => prev.filter(e => e.type !== 'spotify'))
     }
-  }, [spotifyLink, elements])
+  }, [spotifyLink])
 
   // Notify parent of state changes
   useEffect(() => {

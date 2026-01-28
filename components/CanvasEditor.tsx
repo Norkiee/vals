@@ -274,6 +274,7 @@ export default function CanvasEditor({
 
   // Rotation handlers
   const [startAngle, setStartAngle] = useState(0)
+  const [hasRotateMoved, setHasRotateMoved] = useState(false)
 
   const handleRotateStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string) => {
     e.stopPropagation()
@@ -287,7 +288,9 @@ export default function CanvasEditor({
 
     setSelectedId(id)
     setIsRotating(true)
+    setHasRotateMoved(false)
     setStartAngle(initialAngle)
+    setDragStart(pos)
     setElementStart({ x: element.x, y: element.y, width: element.width, height: element.height, rotation: element.rotation })
   }, [elements, getMousePosition])
 
@@ -295,6 +298,14 @@ export default function CanvasEditor({
     if (!isRotating || !selectedId) return
 
     const pos = getMousePosition(e)
+
+    // Only start rotating after mouse has moved at least 5 pixels
+    if (!hasRotateMoved) {
+      const distance = Math.sqrt(Math.pow(pos.x - dragStart.x, 2) + Math.pow(pos.y - dragStart.y, 2))
+      if (distance < 5) return
+      setHasRotateMoved(true)
+    }
+
     const centerX = elementStart.x + elementStart.width / 2
     const centerY = elementStart.y + elementStart.height / 2
 
@@ -304,7 +315,7 @@ export default function CanvasEditor({
     setElements(prev => prev.map(el =>
       el.id === selectedId ? { ...el, rotation: elementStart.rotation + deltaAngle } : el
     ))
-  }, [isRotating, selectedId, elementStart, startAngle, getMousePosition])
+  }, [isRotating, selectedId, elementStart, startAngle, dragStart, hasRotateMoved, getMousePosition])
 
   // Resize handlers
   const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string, handle: string) => {

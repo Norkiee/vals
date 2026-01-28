@@ -146,8 +146,8 @@ export default function CreatePage() {
   return (
     <main className="h-screen flex overflow-hidden">
       {/* Left side - Form (scrollable) */}
-      <div className="w-full lg:w-[420px] bg-[#fafafa] flex-shrink-0 h-screen overflow-y-auto">
-        <div className="px-8 lg:px-12 py-6 lg:py-8">
+      <div className="w-full lg:w-[400px] xl:w-[450px] 2xl:w-[500px] bg-[#fafafa] flex-shrink-0 h-screen overflow-y-auto">
+        <div className="px-6 lg:px-10 xl:px-12 py-6 lg:py-8">
           <h1 className="font-loveheart text-3xl md:text-4xl text-gray-900 mb-6">
             CREATE YOUR VALENTINE
           </h1>
@@ -224,7 +224,7 @@ export default function CreatePage() {
       </div>
 
       {/* Right side - Canvas Editor (fixed) */}
-      <div className="hidden lg:flex flex-1 bg-white flex-col h-screen overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-gray-50 flex-col h-screen overflow-hidden">
         {/* Floating toolbar */}
         <div className="flex items-center justify-center gap-2 py-3">
           {/* Color picker */}
@@ -279,7 +279,7 @@ export default function CreatePage() {
         </div>
 
         {/* Canvas Editor */}
-        <div className="flex-1 flex items-start justify-center pt-4 px-8 overflow-auto">
+        <div className="flex-1 flex items-center justify-center p-4 xl:p-8 overflow-auto">
           <CanvasEditor
             photos={photos}
             message={message}

@@ -7,10 +7,10 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
       {/* Photos arrangement */}
-      <div className="relative w-full max-w-lg h-64 md:h-80 mb-8">
+      <div className="relative w-full max-w-xl h-72 md:h-96 mb-8">
         {/* Left photo */}
-        <div className="absolute left-4 md:left-8 top-8 transform -rotate-12 z-10">
-          <div className="w-28 md:w-36 aspect-square relative">
+        <div className="absolute left-8 md:left-16 top-8 transform -rotate-12 z-10">
+          <div className="w-40 md:w-52 aspect-square relative">
             <Image
               src="/photo.png"
               alt="Photo"
@@ -21,8 +21,8 @@ export default function Home() {
         </div>
 
         {/* Center music card */}
-        <div className="absolute left-1/2 top-4 transform -translate-x-1/2 z-20">
-          <div className="w-32 md:w-40 aspect-square relative">
+        <div className="absolute left-1/2 top-0 transform -translate-x-1/2 z-20">
+          <div className="w-44 md:w-56 aspect-square relative">
             <Image
               src="/music.png"
               alt="Music"
@@ -33,8 +33,8 @@ export default function Home() {
         </div>
 
         {/* Right photo */}
-        <div className="absolute right-4 md:right-8 top-12 transform rotate-12 z-10">
-          <div className="w-28 md:w-36 aspect-square relative">
+        <div className="absolute right-8 md:right-16 top-12 transform rotate-12 z-10">
+          <div className="w-40 md:w-52 aspect-square relative">
             <Image
               src="/photo1.png"
               alt="Photo"

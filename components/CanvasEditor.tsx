@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
 import SpotifyCard from '@/components/SpotifyCard'
@@ -438,48 +438,28 @@ export default function CanvasEditor({
             {/* Blue outline */}
             <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
 
-            {/* Corner resize handles - diamond shaped */}
+            {/* Corner resize handles - square */}
             {['nw', 'ne', 'se', 'sw'].map(handle => {
-              const positions: Record<string, { left?: string; right?: string; top?: string; bottom?: string }> = {
-                nw: { left: '0', top: '0' },
-                ne: { right: '0', top: '0' },
-                se: { right: '0', bottom: '0' },
-                sw: { left: '0', bottom: '0' },
+              const positions: Record<string, React.CSSProperties> = {
+                nw: { left: 0, top: 0, transform: 'translate(-50%, -50%)', cursor: 'nwse-resize' },
+                ne: { right: 0, top: 0, transform: 'translate(50%, -50%)', cursor: 'nesw-resize' },
+                se: { right: 0, bottom: 0, transform: 'translate(50%, 50%)', cursor: 'nwse-resize' },
+                sw: { left: 0, bottom: 0, transform: 'translate(-50%, 50%)', cursor: 'nesw-resize' },
               }
-              const pos = positions[handle]
               return (
                 <div
                   key={handle}
-                  className="absolute w-3 h-3 bg-white border-2 border-blue-500 -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    ...pos,
-                    left: pos.left === '0' ? '0' : undefined,
-                    right: pos.right === '0' ? '0' : undefined,
-                    top: pos.top === '0' ? '0' : undefined,
-                    bottom: pos.bottom === '0' ? '0' : undefined,
-                    transform: `translate(${pos.left === '0' ? '-50%' : '50%'}, ${pos.top === '0' ? '-50%' : '50%'}) rotate(45deg)`,
-                    cursor: handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
-                  }}
+                  className="absolute w-3 h-3 bg-white border-2 border-blue-500"
+                  style={positions[handle]}
                   onMouseDown={(e) => handleResizeStart(e, element.id, handle)}
                   onTouchStart={(e) => handleResizeStart(e, element.id, handle)}
                 />
               )
             })}
 
-            {/* Rotate button - left side */}
+            {/* Delete button - top center */}
             <div
-              className="absolute -left-10 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-alias hover:bg-gray-50"
-              onMouseDown={(e) => handleRotateStart(e, element.id)}
-              onTouchStart={(e) => handleRotateStart(e, element.id)}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-              </svg>
-            </div>
-
-            {/* Delete button - right side */}
-            <div
-              className="absolute -right-10 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
+              className="absolute left-1/2 -top-10 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
               onClick={(e) => {
                 e.stopPropagation()
                 handleDeleteElement(element.id)
@@ -487,6 +467,17 @@ export default function CanvasEditor({
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                 <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
+            </div>
+
+            {/* Rotate button - bottom center */}
+            <div
+              className="absolute left-1/2 -bottom-10 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-alias hover:bg-gray-50"
+              onMouseDown={(e) => handleRotateStart(e, element.id)}
+              onTouchStart={(e) => handleRotateStart(e, element.id)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
               </svg>
             </div>
           </>

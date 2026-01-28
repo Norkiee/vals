@@ -49,7 +49,7 @@ export default function Home() {
       <h1
         className="font-loveheart text-5xl md:text-7xl text-amber-600 mb-8 text-center"
         style={{
-          WebkitTextStroke: '2px white',
+          WebkitTextStroke: '8px white',
           textShadow: '3px 3px 6px rgba(0, 0, 0, 0.3)',
         }}
       >

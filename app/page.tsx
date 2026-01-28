@@ -6,47 +6,41 @@ import Image from 'next/image'
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
-      {/* Polaroid photos arrangement */}
+      {/* Photos arrangement */}
       <div className="relative w-full max-w-lg h-64 md:h-80 mb-8">
-        {/* Left polaroid */}
+        {/* Left photo */}
         <div className="absolute left-4 md:left-8 top-8 transform -rotate-12 z-10">
-          <div className="polaroid w-28 md:w-36">
-            <div className="aspect-square relative overflow-hidden">
-              <Image
-                src="/photo.png"
-                alt="Photo"
-                fill
-                className="object-cover grayscale"
-              />
-            </div>
+          <div className="w-28 md:w-36 aspect-square relative">
+            <Image
+              src="/photo.png"
+              alt="Photo"
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
 
         {/* Center music card */}
         <div className="absolute left-1/2 top-4 transform -translate-x-1/2 z-20">
-          <div className="polaroid w-32 md:w-40">
-            <div className="aspect-square relative overflow-hidden">
-              <Image
-                src="/music.png"
-                alt="Music"
-                fill
-                className="object-cover"
-              />
-            </div>
+          <div className="w-32 md:w-40 aspect-square relative">
+            <Image
+              src="/music.png"
+              alt="Music"
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
 
-        {/* Right polaroid */}
+        {/* Right photo */}
         <div className="absolute right-4 md:right-8 top-12 transform rotate-12 z-10">
-          <div className="polaroid w-28 md:w-36">
-            <div className="aspect-square relative overflow-hidden">
-              <Image
-                src="/photo1.png"
-                alt="Photo"
-                fill
-                className="object-cover grayscale"
-              />
-            </div>
+          <div className="w-28 md:w-36 aspect-square relative">
+            <Image
+              src="/photo1.png"
+              alt="Photo"
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
       </div>

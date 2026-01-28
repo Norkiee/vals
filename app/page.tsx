@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
       {/* Photos arrangement */}
-      <div className="relative w-full max-w-xl h-72 md:h-96 -mb-12">
+      <div className="relative w-full max-w-xl h-72 md:h-96 -mb-14">
         {/* Left photo */}
         <div className="absolute left-8 md:left-16 top-8 transform -rotate-12 z-10 animate-float-slow">
           <div className="w-40 md:w-52 aspect-square relative">

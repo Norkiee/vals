@@ -204,18 +204,20 @@ export default function ValentinePage() {
         <div
           className={`w-full h-full ${
             isPolaroid
-              ? 'bg-white p-1 pb-3 shadow-lg'
-              : 'border-2 border-dashed p-1 bg-white'
+              ? 'bg-white p-2 pb-6 shadow-lg'
+              : 'hearts-border p-2 bg-white'
           }`}
           style={{
-            borderColor: isPolaroid ? undefined : themeColors.primary,
+            ['--theme-primary' as string]: themeColors.primary,
           }}
         >
-          <img
-            src={photo.photo_url}
-            alt="Photo"
-            className="w-full h-full object-cover"
-          />
+          <div className="w-full h-full relative">
+            <img
+              src={photo.photo_url}
+              alt="Photo"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       </div>
     )
@@ -380,11 +382,11 @@ export default function ValentinePage() {
                   className={`relative ${
                     valentine.photo_style === 'polaroid'
                       ? 'bg-white p-2 pb-6 shadow-lg'
-                      : 'border-2 border-dashed p-2 bg-white'
+                      : 'hearts-border p-2 bg-white'
                   }`}
                   style={{
                     transform: `rotate(${i % 2 === 0 ? -2 : 2}deg)`,
-                    borderColor: valentine.photo_style !== 'polaroid' ? themeColors.primary : undefined,
+                    ['--theme-primary' as string]: themeColors.primary,
                   }}
                 >
                   <div className="w-28 h-28 overflow-hidden">

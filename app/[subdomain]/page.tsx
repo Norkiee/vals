@@ -224,20 +224,25 @@ export default function ValentinePage() {
   const renderText = (element: CanvasElement) => {
     if (!valentine.message) return null
 
+    // Scale font size based on element width (same as CanvasEditor)
+    const textScale = element.width / 200
+    const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
+
     return (
       <div
         key={element.id}
-        className="absolute"
+        className="absolute flex items-center justify-center p-2"
         style={{
           left: element.x,
           top: element.y,
           width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
         <p
           className="font-loveheart text-gray-800 leading-relaxed text-center"
-          style={{ fontSize: fontSize }}
+          style={{ fontSize: `${scaledFontSize}px` }}
         >
           {valentine.message}
         </p>
@@ -246,30 +251,47 @@ export default function ValentinePage() {
   }
 
   const renderButtons = (element: CanvasElement) => {
+    // Scale button size based on element width (same as CanvasEditor)
+    const buttonScale = element.width / 160
+    const btnFontSize = Math.max(10, Math.min(24, 12 * buttonScale))
+    const btnPaddingX = Math.max(12, Math.min(40, 20 * buttonScale))
+    const btnPaddingY = Math.max(4, Math.min(16, 6 * buttonScale))
+    const btnGap = Math.max(8, Math.min(24, 12 * buttonScale))
+
     return (
       <div
         key={element.id}
-        className="absolute"
+        className="absolute flex items-center justify-center"
         style={{
           left: element.x,
           top: element.y,
           width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
         {!responded ? (
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
             <button
               onClick={() => handleResponse(true)}
-              className="flex-1 py-2 rounded-full text-white font-medium text-sm shadow-md hover:shadow-lg transition-all"
-              style={{ backgroundColor: themeColors.primary }}
+              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`
+              }}
             >
               Yes
             </button>
             <button
               onClick={() => handleResponse(false)}
-              className="flex-1 py-2 rounded-full border-2 font-medium text-sm hover:bg-white/50 transition-all"
-              style={{ borderColor: themeColors.primary, color: themeColors.primary }}
+              className="rounded-full border font-medium hover:bg-white/50 transition-all"
+              style={{
+                borderColor: themeColors.primary,
+                color: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`
+              }}
             >
               No
             </button>

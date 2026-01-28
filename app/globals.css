@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Loveheart';
+  src: url('/fonts/Loveheart-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf5f0;
+  --foreground: #1a1a1a;
+
+  /* Pink Theme (default) */
+  --theme-primary: #ec4899;
+  --theme-light: #fbcfe8;
+  --theme-gradient: linear-gradient(to right, #fecdd3, #fbcfe8);
+  --theme-bg: #fce7f3;
+
+  /* Brand colors */
+  --brand-cream: #faf5f0;
+  --brand-red: #dc2626;
+  --brand-orange: #d97706;
 }
 
 @theme inline {
@@ -10,17 +29,76 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-loveheart: 'Loveheart', cursive;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.font-loveheart {
+  font-family: 'Loveheart', cursive;
+}
+
+/* Theme classes */
+.theme-pink {
+  --theme-primary: #ec4899;
+  --theme-light: #fbcfe8;
+  --theme-gradient: linear-gradient(to right, #fecdd3, #fbcfe8);
+  --theme-bg: #fce7f3;
+}
+
+.theme-red {
+  --theme-primary: #ef4444;
+  --theme-light: #fecaca;
+  --theme-gradient: linear-gradient(to right, #fecaca, #fca5a5);
+  --theme-bg: #fee2e2;
+}
+
+.theme-purple {
+  --theme-primary: #a855f7;
+  --theme-light: #e9d5ff;
+  --theme-gradient: linear-gradient(to right, #ddd6fe, #e9d5ff);
+  --theme-bg: #f3e8ff;
+}
+
+.theme-sunset {
+  --theme-primary: #f97316;
+  --theme-light: #fed7aa;
+  --theme-gradient: linear-gradient(to right, #fed7aa, #fbcfe8);
+  --theme-bg: #ffedd5;
+}
+
+/* Polaroid style */
+.polaroid {
+  background: white;
+  padding: 8px 8px 32px 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Hearts border style */
+.hearts-border {
+  border: 2px dashed var(--theme-primary);
+  border-radius: 8px;
+  position: relative;
+}
+
+.hearts-border::before,
+.hearts-border::after {
+  content: '♥';
+  position: absolute;
+  color: var(--theme-primary);
+  font-size: 14px;
+}
+
+.hearts-border::before {
+  top: -8px;
+  left: 8px;
+}
+
+.hearts-border::after {
+  bottom: -8px;
+  right: 8px;
 }

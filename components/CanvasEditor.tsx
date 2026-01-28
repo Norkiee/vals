@@ -17,14 +17,19 @@ export interface CanvasElement {
   photoIndex?: number
 }
 
+export interface CanvasState {
+  mobile: CanvasElement[]
+  desktop: CanvasElement[]
+}
+
 interface CanvasEditorProps {
   photos: string[]
   message: string
   spotifyLink: string
   theme: ThemeKey
   photoStyle: PhotoStyle
-  canvasState?: CanvasElement[]
-  onCanvasStateChange?: (state: CanvasElement[]) => void
+  canvasState?: CanvasState
+  onCanvasStateChange?: (state: CanvasState) => void
   viewMode?: 'mobile' | 'desktop'
   recipientName?: string
 }
@@ -34,64 +39,127 @@ const MOBILE_HEIGHT = 476
 const DESKTOP_WIDTH = 500
 const DESKTOP_HEIGHT = 320
 
-export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): CanvasElement[] {
+export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop' = 'mobile'): CanvasElement[] {
   const elements: CanvasElement[] = []
-  const TOP_OFFSET = 40 // Account for Dynamic Island
 
-  // Position photos in a scattered layout
-  for (let i = 0; i < photoCount; i++) {
+  if (mode === 'mobile') {
+    const TOP_OFFSET = 40 // Account for Dynamic Island
+
+    // Position photos in a scattered layout
+    for (let i = 0; i < photoCount; i++) {
+      elements.push({
+        id: `photo-${i}`,
+        type: 'photo',
+        photoIndex: i,
+        x: 30 + (i % 2) * 80,
+        y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+        width: 70,
+        height: 70,
+        rotation: (i % 2 === 0 ? -5 : 5),
+        zIndex: i + 1,
+      })
+    }
+
+    // Text element
     elements.push({
-      id: `photo-${i}`,
-      type: 'photo',
-      photoIndex: i,
-      x: 30 + (i % 2) * 80,
-      y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
-      width: 70,
-      height: 70,
-      rotation: (i % 2 === 0 ? -5 : 5),
-      zIndex: i + 1,
-    })
-  }
-
-  // Text element
-  elements.push({
-    id: 'text-1',
-    type: 'text',
-    x: 10,
-    y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
-    width: 200,
-    height: 60,
-    rotation: 0,
-    zIndex: photoCount + 1,
-  })
-
-  // Buttons element
-  elements.push({
-    id: 'buttons-1',
-    type: 'buttons',
-    x: 30,
-    y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
-    width: 160,
-    height: 40,
-    rotation: 0,
-    zIndex: photoCount + 2,
-  })
-
-  // Spotify element
-  if (hasSpotify) {
-    elements.push({
-      id: 'spotify-1',
-      type: 'spotify',
+      id: 'text-1',
+      type: 'text',
       x: 10,
-      y: TOP_OFFSET + 310,
+      y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
       width: 200,
       height: 60,
       rotation: 0,
-      zIndex: photoCount + 3,
+      zIndex: photoCount + 1,
     })
+
+    // Buttons element
+    elements.push({
+      id: 'buttons-1',
+      type: 'buttons',
+      x: 30,
+      y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
+      width: 160,
+      height: 40,
+      rotation: 0,
+      zIndex: photoCount + 2,
+    })
+
+    // Spotify element
+    if (hasSpotify) {
+      elements.push({
+        id: 'spotify-1',
+        type: 'spotify',
+        x: 10,
+        y: TOP_OFFSET + 310,
+        width: 200,
+        height: 60,
+        rotation: 0,
+        zIndex: photoCount + 3,
+      })
+    }
+  } else {
+    // Desktop layout - wider canvas
+    for (let i = 0; i < photoCount; i++) {
+      elements.push({
+        id: `photo-${i}`,
+        type: 'photo',
+        photoIndex: i,
+        x: 20 + (i % 3) * 120,
+        y: 20 + Math.floor(i / 3) * 120,
+        width: 100,
+        height: 100,
+        rotation: (i % 2 === 0 ? -3 : 3),
+        zIndex: i + 1,
+      })
+    }
+
+    // Text element
+    elements.push({
+      id: 'text-1',
+      type: 'text',
+      x: 20,
+      y: photoCount > 0 ? 160 : 60,
+      width: 300,
+      height: 60,
+      rotation: 0,
+      zIndex: photoCount + 1,
+    })
+
+    // Buttons element
+    elements.push({
+      id: 'buttons-1',
+      type: 'buttons',
+      x: 170,
+      y: photoCount > 0 ? 230 : 140,
+      width: 160,
+      height: 40,
+      rotation: 0,
+      zIndex: photoCount + 2,
+    })
+
+    // Spotify element
+    if (hasSpotify) {
+      elements.push({
+        id: 'spotify-1',
+        type: 'spotify',
+        x: 20,
+        y: 230,
+        width: 140,
+        height: 60,
+        rotation: 0,
+        zIndex: photoCount + 3,
+      })
+    }
   }
 
   return elements
+}
+
+export function getDefaultCanvasStates(photoCount: number, hasSpotify: boolean): CanvasState {
+  return {
+    mobile: getDefaultCanvasState(photoCount, hasSpotify, 'mobile'),
+    desktop: getDefaultCanvasState(photoCount, hasSpotify, 'desktop'),
+  }
 }
 
 export default function CanvasEditor({
@@ -108,9 +176,22 @@ export default function CanvasEditor({
   const themeColors = THEMES[theme]
   const canvasRef = useRef<HTMLDivElement>(null)
 
-  const [elements, setElements] = useState<CanvasElement[]>(() =>
-    canvasState && canvasState.length > 0 ? canvasState : getDefaultCanvasState(photos.length, !!spotifyLink)
+  // Separate states for mobile and desktop
+  const [mobileElements, setMobileElements] = useState<CanvasElement[]>(() =>
+    canvasState?.mobile && canvasState.mobile.length > 0
+      ? canvasState.mobile
+      : getDefaultCanvasState(photos.length, !!spotifyLink, 'mobile')
   )
+  const [desktopElements, setDesktopElements] = useState<CanvasElement[]>(() =>
+    canvasState?.desktop && canvasState.desktop.length > 0
+      ? canvasState.desktop
+      : getDefaultCanvasState(photos.length, !!spotifyLink, 'desktop')
+  )
+
+  // Get current elements based on view mode
+  const elements = viewMode === 'mobile' ? mobileElements : desktopElements
+  const setElements = viewMode === 'mobile' ? setMobileElements : setDesktopElements
+
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isRotating, setIsRotating] = useState(false)
@@ -118,27 +199,46 @@ export default function CanvasEditor({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [elementStart, setElementStart] = useState({ x: 0, y: 0, width: 0, height: 0, rotation: 0 })
 
-  // Update elements when photos change
+  // Clear selection when switching view modes
   useEffect(() => {
-    const TOP_OFFSET = 40
-    setElements(prev => {
+    setSelectedId(null)
+  }, [viewMode])
+
+  // Update elements when photos change - for both modes
+  useEffect(() => {
+    const updateElementsWithPhotos = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
       const existingPhotoIds = prev.filter(e => e.type === 'photo').map(e => e.photoIndex)
       const newElements = [...prev]
 
       // Add new photos
       for (let i = 0; i < photos.length; i++) {
         if (!existingPhotoIds.includes(i)) {
-          newElements.push({
-            id: `photo-${i}`,
-            type: 'photo',
-            photoIndex: i,
-            x: 30 + (i % 2) * 80,
-            y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
-            width: 70,
-            height: 70,
-            rotation: (i % 2 === 0 ? -5 : 5),
-            zIndex: newElements.length + 1,
-          })
+          if (mode === 'mobile') {
+            newElements.push({
+              id: `photo-${i}`,
+              type: 'photo',
+              photoIndex: i,
+              x: 30 + (i % 2) * 80,
+              y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+              width: 70,
+              height: 70,
+              rotation: (i % 2 === 0 ? -5 : 5),
+              zIndex: newElements.length + 1,
+            })
+          } else {
+            newElements.push({
+              id: `photo-${i}`,
+              type: 'photo',
+              photoIndex: i,
+              x: 20 + (i % 3) * 120,
+              y: 20 + Math.floor(i / 3) * 120,
+              width: 100,
+              height: 100,
+              rotation: (i % 2 === 0 ? -3 : 3),
+              zIndex: newElements.length + 1,
+            })
+          }
         }
       }
 
@@ -146,27 +246,30 @@ export default function CanvasEditor({
       return newElements.filter(e =>
         e.type !== 'photo' || (e.photoIndex !== undefined && e.photoIndex < photos.length)
       )
-    })
+    }
+
+    setMobileElements(prev => updateElementsWithPhotos(prev, 'mobile'))
+    setDesktopElements(prev => updateElementsWithPhotos(prev, 'desktop'))
   }, [photos.length])
 
-  // Ensure text and buttons elements always exist
+  // Ensure text and buttons elements always exist - for both modes
   useEffect(() => {
-    const TOP_OFFSET = 40
-    setElements(prev => {
+    const ensureTextAndButtons = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
       const hasText = prev.some(e => e.type === 'text')
       const hasButtons = prev.some(e => e.type === 'buttons')
 
       if (hasText && hasButtons) return prev
 
       const newElements = [...prev]
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
 
       if (!hasText) {
         newElements.push({
           id: 'text-1',
           type: 'text',
-          x: 10,
-          y: TOP_OFFSET + 180,
-          width: 200,
+          x: mode === 'mobile' ? 10 : 20,
+          y: mode === 'mobile' ? TOP_OFFSET + 180 : 160,
+          width: mode === 'mobile' ? 200 : 300,
           height: 60,
           rotation: 0,
           zIndex: newElements.length + 1,
@@ -177,8 +280,8 @@ export default function CanvasEditor({
         newElements.push({
           id: 'buttons-1',
           type: 'buttons',
-          x: 30,
-          y: TOP_OFFSET + 250,
+          x: mode === 'mobile' ? 30 : 170,
+          y: mode === 'mobile' ? TOP_OFFSET + 250 : 230,
           width: 160,
           height: 40,
           rotation: 0,
@@ -187,32 +290,43 @@ export default function CanvasEditor({
       }
 
       return newElements
-    })
+    }
+
+    setMobileElements(prev => ensureTextAndButtons(prev, 'mobile'))
+    setDesktopElements(prev => ensureTextAndButtons(prev, 'desktop'))
   }, [])
 
-  // Add spotify when link is added
+  // Add spotify when link is added - for both modes
   useEffect(() => {
-    const TOP_OFFSET = 40
-    if (spotifyLink && !elements.find(e => e.type === 'spotify')) {
-      setElements(prev => [...prev, {
-        id: 'spotify-1',
-        type: 'spotify',
-        x: 10,
-        y: TOP_OFFSET + 310,
-        width: 200,
-        height: 60,
-        rotation: 0,
-        zIndex: prev.length + 1,
-      }])
-    } else if (!spotifyLink) {
-      setElements(prev => prev.filter(e => e.type !== 'spotify'))
+    const addOrRemoveSpotify = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
+      const hasSpotify = prev.some(e => e.type === 'spotify')
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
+
+      if (spotifyLink && !hasSpotify) {
+        return [...prev, {
+          id: 'spotify-1',
+          type: 'spotify' as const,
+          x: mode === 'mobile' ? 10 : 20,
+          y: mode === 'mobile' ? TOP_OFFSET + 310 : 230,
+          width: mode === 'mobile' ? 200 : 140,
+          height: 60,
+          rotation: 0,
+          zIndex: prev.length + 1,
+        }]
+      } else if (!spotifyLink && hasSpotify) {
+        return prev.filter(e => e.type !== 'spotify')
+      }
+      return prev
     }
+
+    setMobileElements(prev => addOrRemoveSpotify(prev, 'mobile'))
+    setDesktopElements(prev => addOrRemoveSpotify(prev, 'desktop'))
   }, [spotifyLink])
 
-  // Notify parent of state changes
+  // Notify parent of state changes - send both states
   useEffect(() => {
-    onCanvasStateChange?.(elements)
-  }, [elements, onCanvasStateChange])
+    onCanvasStateChange?.({ mobile: mobileElements, desktop: desktopElements })
+  }, [mobileElements, desktopElements, onCanvasStateChange])
 
   const getMousePosition = useCallback((e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
     const canvas = canvasRef.current

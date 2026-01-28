@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
 import PhotoStyleToggle from '@/components/PhotoStyleToggle'
-import CanvasEditor, { CanvasElement } from '@/components/CanvasEditor'
+import CanvasEditor, { CanvasState } from '@/components/CanvasEditor'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeKey, PhotoStyle, FONTS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
 import { generateSubdomain } from '@/lib/utils'
@@ -24,7 +24,7 @@ export default function CreatePage() {
   const [theme, setTheme] = useState<ThemeKey>('pink')
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('polaroid')
   const [font, setFont] = useState<string>(FONTS[0].name)
-  const [canvasState, setCanvasState] = useState<CanvasElement[]>([])
+  const [canvasState, setCanvasState] = useState<CanvasState>({ mobile: [], desktop: [] })
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
   // Subdomain availability

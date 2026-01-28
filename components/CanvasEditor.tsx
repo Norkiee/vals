@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
+import { SpotifyMetadata } from '@/lib/spotify'
 import SpotifyCard from '@/components/SpotifyCard'
 
 export interface CanvasElement {
@@ -26,6 +27,7 @@ interface CanvasEditorProps {
   photos: string[]
   message: string
   spotifyLink: string
+  spotifyMeta?: SpotifyMetadata | null
   theme: ThemeKey
   photoStyle: PhotoStyle
   canvasState?: CanvasState
@@ -166,6 +168,7 @@ export default function CanvasEditor({
   photos,
   message,
   spotifyLink,
+  spotifyMeta,
   theme,
   photoStyle,
   canvasState,
@@ -593,6 +596,9 @@ export default function CanvasEditor({
             <div className="w-full h-full">
               <SpotifyCard
                 spotifyLink={spotifyLink}
+                title={spotifyMeta?.title}
+                artist={spotifyMeta?.artist}
+                thumbnail={spotifyMeta?.thumbnail}
                 themeColor={themeColors.primary}
                 compact={true}
               />

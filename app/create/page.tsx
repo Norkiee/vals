@@ -9,6 +9,7 @@ import CanvasEditor, { CanvasState } from '@/components/CanvasEditor'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeKey, PhotoStyle, FONTS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
 import { generateSubdomain } from '@/lib/utils'
+import { fetchSpotifyMetadata, SpotifyMetadata } from '@/lib/spotify'
 
 export default function CreatePage() {
   const router = useRouter()
@@ -26,6 +27,8 @@ export default function CreatePage() {
   const [font, setFont] = useState<string>(FONTS[0].name)
   const [canvasState, setCanvasState] = useState<CanvasState>({ mobile: [], desktop: [] })
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
+  const [spotifyMeta, setSpotifyMeta] = useState<SpotifyMetadata | null>(null)
+  const [loadingSpotify, setLoadingSpotify] = useState(false)
 
   // Subdomain availability
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null)
@@ -39,6 +42,30 @@ export default function CreatePage() {
       setSenderName(user.user_metadata.full_name)
     }
   }, [user, senderName])
+
+  // Fetch Spotify metadata when link changes
+  useEffect(() => {
+    if (!spotifyLink) {
+      setSpotifyMeta(null)
+      return
+    }
+
+    const fetchMeta = async () => {
+      setLoadingSpotify(true)
+      try {
+        const meta = await fetchSpotifyMetadata(spotifyLink)
+        setSpotifyMeta(meta)
+      } catch {
+        setSpotifyMeta(null)
+      } finally {
+        setLoadingSpotify(false)
+      }
+    }
+
+    // Debounce the fetch
+    const timeoutId = setTimeout(fetchMeta, 500)
+    return () => clearTimeout(timeoutId)
+  }, [spotifyLink])
 
   const checkSubdomain = useCallback(async (name: string) => {
     if (!name.trim()) {
@@ -257,6 +284,7 @@ export default function CreatePage() {
             photos={photos}
             message={message}
             spotifyLink={spotifyLink}
+            spotifyMeta={spotifyMeta}
             theme={theme}
             photoStyle={photoStyle}
             canvasState={canvasState}

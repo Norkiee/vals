@@ -426,26 +426,47 @@ export default function CanvasEditor({
           )
 
         case 'text':
+          // Scale font size based on element width (base width: 200)
+          const textScale = element.width / 200
+          const fontSize = Math.max(10, Math.min(32, 14 * textScale))
           return (
-            <div className="w-full h-full flex items-center justify-center p-2">
-              <p className="font-loveheart text-sm leading-relaxed text-center" style={{ color: '#1a1a1a' }}>
+            <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
+              <p
+                className="font-loveheart leading-relaxed text-center"
+                style={{ color: '#1a1a1a', fontSize: `${fontSize}px` }}
+              >
                 {message || 'Your message will appear here...'}
               </p>
             </div>
           )
 
         case 'buttons':
+          // Scale button size based on element width (base width: 160)
+          const buttonScale = element.width / 160
+          const btnFontSize = Math.max(10, Math.min(24, 12 * buttonScale))
+          const btnPaddingX = Math.max(12, Math.min(40, 20 * buttonScale))
+          const btnPaddingY = Math.max(4, Math.min(16, 6 * buttonScale))
+          const btnGap = Math.max(8, Math.min(24, 12 * buttonScale))
           return (
-            <div className="w-full h-full flex items-center justify-center gap-3">
+            <div className="w-full h-full flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
               <button
-                className="px-5 py-1.5 rounded-full text-white text-xs font-medium"
-                style={{ backgroundColor: themeColors.primary }}
+                className="rounded-full text-white font-medium"
+                style={{
+                  backgroundColor: themeColors.primary,
+                  fontSize: `${btnFontSize}px`,
+                  padding: `${btnPaddingY}px ${btnPaddingX}px`
+                }}
               >
                 Yes
               </button>
               <button
-                className="px-5 py-1.5 rounded-full border text-xs font-medium"
-                style={{ borderColor: themeColors.primary, color: themeColors.primary }}
+                className="rounded-full border font-medium"
+                style={{
+                  borderColor: themeColors.primary,
+                  color: themeColors.primary,
+                  fontSize: `${btnFontSize}px`,
+                  padding: `${btnPaddingY}px ${btnPaddingX}px`
+                }}
               >
                 No
               </button>

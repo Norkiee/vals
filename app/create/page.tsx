@@ -226,18 +226,18 @@ export default function CreatePage() {
       {/* Right side - Canvas Editor (fixed) */}
       <div className="hidden lg:flex flex-1 bg-white flex-col h-screen overflow-hidden">
         {/* Floating toolbar */}
-        <div className="flex items-center justify-center gap-2 py-3">
+        <div className="flex items-center justify-center gap-3 py-4">
           {/* Color picker */}
-          <div className="bg-white rounded-full shadow-sm p-1.5 border border-gray-100">
+          <div className="bg-white rounded-full shadow-sm p-2.5 border border-gray-100">
             <ColorPicker value={theme} onChange={setTheme} />
           </div>
 
           {/* Font selector */}
-          <div className="bg-white rounded-full shadow-sm px-3 py-1.5 border border-gray-100">
+          <div className="bg-white rounded-full shadow-sm px-5 py-2.5 border border-gray-100">
             <select
               value={font}
               onChange={(e) => setFont(e.target.value)}
-              className="text-sm bg-transparent border-none focus:outline-none cursor-pointer"
+              className="text-base bg-transparent border-none focus:outline-none cursor-pointer"
             >
               {FONTS.map((f) => (
                 <option key={f.name} value={f.name}>
@@ -248,28 +248,28 @@ export default function CreatePage() {
           </div>
 
           {/* Photo style toggle */}
-          <div className="bg-white rounded-full shadow-sm px-3 py-1.5 border border-gray-100">
+          <div className="bg-white rounded-full shadow-sm px-5 py-2.5 border border-gray-100">
             <PhotoStyleToggle value={photoStyle} onChange={setPhotoStyle} />
           </div>
 
           {/* View mode toggle */}
-          <div className="bg-white rounded-full shadow-sm p-1 border border-gray-100 flex gap-1">
+          <div className="bg-white rounded-full shadow-sm p-1.5 border border-gray-100 flex gap-1.5">
             <button
               onClick={() => setViewMode('mobile')}
-              className={`p-1.5 rounded-full transition-colors ${viewMode === 'mobile' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'mobile' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
               title="Mobile view"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                 <line x1="12" y1="18" x2="12.01" y2="18" />
               </svg>
             </button>
             <button
               onClick={() => setViewMode('desktop')}
-              className={`p-1.5 rounded-full transition-colors ${viewMode === 'desktop' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'desktop' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
               title="Desktop view"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
                 <line x1="12" y1="17" x2="12" y2="21" />

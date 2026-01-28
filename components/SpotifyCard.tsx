@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
-import { getSpotifyOpenUrl } from '@/lib/spotify'
+import { getSpotifyEmbedUrl } from '@/lib/spotify'
 
 interface SpotifyCardProps {
   spotifyLink: string
@@ -20,12 +21,30 @@ export default function SpotifyCard({
   themeColor,
   compact = false,
 }: SpotifyCardProps) {
-  const openUrl = getSpotifyOpenUrl(spotifyLink)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const embedUrl = getSpotifyEmbedUrl(spotifyLink)
 
   const handlePlay = () => {
-    if (openUrl) {
-      window.open(openUrl, '_blank', 'noopener,noreferrer')
+    if (embedUrl) {
+      setIsPlaying(true)
     }
+  }
+
+  // Show embedded player when playing
+  if (isPlaying && embedUrl) {
+    return (
+      <div className={compact ? "w-full" : "w-full"}>
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height={compact ? "80" : "152"}
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          className="rounded-xl"
+        />
+      </div>
+    )
   }
 
   if (compact) {

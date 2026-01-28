@@ -81,3 +81,34 @@ export function getSpotifyOpenUrl(link: string): string | null {
 
   return link
 }
+
+/**
+ * Converts a Spotify URL to an embed URL for iframe playback
+ */
+export function getSpotifyEmbedUrl(link: string): string | null {
+  if (!link) return null
+
+  // Extract type and ID from various Spotify URL formats
+  let type: string | null = null
+  let id: string | null = null
+
+  // Handle open.spotify.com URLs
+  const webMatch = link.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/)
+  if (webMatch) {
+    type = webMatch[1]
+    id = webMatch[2]
+  }
+
+  // Handle Spotify URI format (spotify:track:xxxx)
+  const uriMatch = link.match(/spotify:(track|album|playlist|episode|show):([a-zA-Z0-9]+)/)
+  if (uriMatch) {
+    type = uriMatch[1]
+    id = uriMatch[2]
+  }
+
+  if (type && id) {
+    return `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`
+  }
+
+  return null
+}

@@ -149,7 +149,7 @@ export default function CreatePage() {
 
   const isValid = recipientName.trim() && photos.length > 0
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.com'
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.xyz'
   const valentineUrl = `https://${createdSubdomain}.${rootDomain}`
   const adminUrl = `https://${rootDomain}/admin/${createdAdminToken}`
 
@@ -241,12 +241,12 @@ export default function CreatePage() {
                       <span className="text-xs text-gray-400">Checking...</span>
                     ) : subdomainAvailable === true ? (
                       <>
-                        <span className="text-xs text-gray-400">{subdomain}.askcuter.com</span>
+                        <span className="text-xs text-gray-400">{subdomain}.askcuter.xyz</span>
                         <span className="text-green-500">✓</span>
                       </>
                     ) : subdomainAvailable === false ? (
                       <>
-                        <span className="text-xs text-gray-400">{subdomain}.askcuter.com</span>
+                        <span className="text-xs text-gray-400">{subdomain}.askcuter.xyz</span>
                         <span className="text-red-500">✗</span>
                       </>
                     ) : null}

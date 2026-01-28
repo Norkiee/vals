@@ -40,7 +40,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.com'
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.xyz'
   const shareUrl = valentine ? `https://${valentine.subdomain}.${rootDomain}` : ''
 
   useEffect(() => {

@@ -776,7 +776,7 @@ export default function CanvasEditor({
               <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
             </div>
             <div className="max-w-[800px] mx-auto text-center text-xs text-gray-500 bg-gray-800 rounded-full px-4 py-1">
-              {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.com` : 'preview'}
+              {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.xyz` : 'preview'}
             </div>
             <div className="w-[52px]" /> {/* Spacer to balance the dots */}
           </div>

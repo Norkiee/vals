@@ -321,7 +321,7 @@ export default function Preview({
           <div className="w-3 h-3 rounded-full bg-green-400" />
         </div>
         <div className="flex-1 text-center text-xs text-gray-500 bg-white rounded px-3 py-1">
-          {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.com` : 'preview'}
+          {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.xyz` : 'preview'}
         </div>
       </div>
       {/* Screen content - landscape aspect ratio */}

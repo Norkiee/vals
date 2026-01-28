@@ -50,3 +50,14 @@ export function isValidSpotifyLink(link: string): boolean {
 export function cn(...classes: (string | boolean | undefined)[]): string {
   return classes.filter(Boolean).join(' ')
 }
+
+export function generateAdminToken(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let token = ''
+  const randomValues = new Uint8Array(32)
+  crypto.getRandomValues(randomValues)
+  for (let i = 0; i < 32; i++) {
+    token += chars[randomValues[i] % chars.length]
+  }
+  return token
+}

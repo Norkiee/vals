@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generateSubdomain } from '@/lib/utils'
+import { generateSubdomain, generateAdminToken } from '@/lib/utils'
 import { fetchSpotifyMetadata } from '@/lib/spotify'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       photos,
       itemOrder,
       userId,
+      creatorEmail,
     } = body
 
     // Validate required fields
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Create valentine record
     const valentineId = uuidv4()
+    const adminToken = generateAdminToken()
 
     // Fetch Spotify metadata if link provided
     let spotifyTitle: string | null = null
@@ -65,6 +67,8 @@ export async function POST(request: NextRequest) {
       .insert({
         id: valentineId,
         subdomain,
+        admin_token: adminToken,
+        creator_email: creatorEmail?.trim() || null,
         sender_name: senderName?.trim() || 'Someone special',
         recipient_name: recipientName.trim(),
         message: message?.trim() || null,
@@ -144,6 +148,7 @@ export async function POST(request: NextRequest) {
       success: true,
       subdomain,
       id: valentineId,
+      adminToken,
     })
   } catch (error) {
     console.error('Error creating valentine:', error)

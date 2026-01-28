@@ -25,6 +25,7 @@ export default function CreatePage() {
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('polaroid')
   const [font, setFont] = useState<string>(FONTS[0].name)
   const [canvasState, setCanvasState] = useState<CanvasElement[]>([])
+  const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
   // Subdomain availability
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null)
@@ -223,6 +224,31 @@ export default function CreatePage() {
           <div className="bg-white rounded-full shadow-sm px-3 py-1.5 border border-gray-100">
             <PhotoStyleToggle value={photoStyle} onChange={setPhotoStyle} />
           </div>
+
+          {/* View mode toggle */}
+          <div className="bg-white rounded-full shadow-sm p-1 border border-gray-100 flex gap-1">
+            <button
+              onClick={() => setViewMode('mobile')}
+              className={`p-1.5 rounded-full transition-colors ${viewMode === 'mobile' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              title="Mobile view"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                <line x1="12" y1="18" x2="12.01" y2="18" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('desktop')}
+              className={`p-1.5 rounded-full transition-colors ${viewMode === 'desktop' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              title="Desktop view"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Canvas Editor */}
@@ -235,6 +261,8 @@ export default function CreatePage() {
             photoStyle={photoStyle}
             canvasState={canvasState}
             onCanvasStateChange={setCanvasState}
+            viewMode={viewMode}
+            recipientName={recipientName}
           />
         </div>
       </div>

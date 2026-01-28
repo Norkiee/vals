@@ -693,15 +693,15 @@ export default function CanvasEditor({
     return (
       <div className="flex flex-col items-center">
         {/* Browser frame */}
-        <div className="bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-lg">
+        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl">
           {/* Browser chrome */}
-          <div className="bg-gray-200 px-4 py-2 flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-400" />
-              <div className="w-3 h-3 rounded-full bg-yellow-400" />
-              <div className="w-3 h-3 rounded-full bg-green-400" />
+          <div className="bg-gray-900 px-4 py-3 flex items-center gap-3">
+            <div className="flex gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-green-500" />
             </div>
-            <div className="flex-1 text-center text-xs text-gray-500 bg-white rounded px-3 py-1">
+            <div className="flex-1 text-center text-xs text-gray-400 bg-gray-700 rounded-md px-4 py-1.5">
               {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.com` : 'preview'}
             </div>
           </div>

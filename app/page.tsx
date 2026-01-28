@@ -53,7 +53,7 @@ export default function Home() {
 
       {/* Title */}
       <h1
-        className="font-loveheart text-7xl md:text-9xl text-amber-600 mb-4 text-center"
+        className="font-loveheart text-7xl md:text-9xl text-amber-600 mb-[18px] text-center"
         style={{
           WebkitTextStroke: '4.5px white',
           textShadow: '3px 3px 6px rgba(0, 0, 0, 0.3)',

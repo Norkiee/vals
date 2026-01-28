@@ -59,23 +59,30 @@ export default function ValentinePage() {
   useEffect(() => {
     setMounted(true)
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      return mobile
     }
     const calculateScale = () => {
       if (typeof window === 'undefined') return
+      const mobile = window.innerWidth < 768
       const screenWidth = window.innerWidth
       const screenHeight = window.innerHeight
-      const scaleX = (screenWidth - 32) / MOBILE_WIDTH
-      const scaleY = (screenHeight - 80) / MOBILE_HEIGHT
-      setScale(Math.min(scaleX, scaleY, 2.5))
+      const baseWidth = mobile ? MOBILE_WIDTH : 800
+      const baseHeight = mobile ? MOBILE_HEIGHT : 500
+      const scaleX = (screenWidth - 32) / baseWidth
+      const scaleY = (screenHeight - 80) / baseHeight
+      setScale(Math.min(scaleX, scaleY, mobile ? 2.5 : 1.2))
     }
     checkMobile()
     calculateScale()
-    window.addEventListener('resize', checkMobile)
-    window.addEventListener('resize', calculateScale)
+    const handleResize = () => {
+      checkMobile()
+      calculateScale()
+    }
+    window.addEventListener('resize', handleResize)
     return () => {
-      window.removeEventListener('resize', checkMobile)
-      window.removeEventListener('resize', calculateScale)
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
@@ -159,8 +166,17 @@ export default function ValentinePage() {
     canvasLayout = null
   }
 
-  const elements = canvasLayout?.mobile || []
+  // Use mobile or desktop layout based on screen size
+  const elements = isMobile
+    ? (canvasLayout?.mobile || [])
+    : (canvasLayout?.desktop || canvasLayout?.mobile || [])
   const fontSize = valentine.font_size || 16
+
+  // Canvas dimensions based on device
+  const DESKTOP_WIDTH = 800
+  const DESKTOP_HEIGHT = 500
+  const canvasWidth = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH
+  const canvasHeight = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
 
 
   const renderPhoto = (element: CanvasElement) => {
@@ -219,7 +235,7 @@ export default function ValentinePage() {
         }}
       >
         <p
-          className="font-loveheart text-gray-800 leading-relaxed"
+          className="font-loveheart text-gray-800 leading-relaxed text-center"
           style={{ fontSize: fontSize }}
         >
           {valentine.message}
@@ -445,8 +461,8 @@ export default function ValentinePage() {
       <div
         className="relative"
         style={{
-          width: MOBILE_WIDTH,
-          height: MOBILE_HEIGHT,
+          width: canvasWidth,
+          height: canvasHeight,
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
         }}

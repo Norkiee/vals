@@ -5,17 +5,15 @@ import { useRouter } from 'next/navigation'
 import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
 import PhotoStyleToggle from '@/components/PhotoStyleToggle'
-import Preview from '@/components/Preview'
+import CanvasEditor, { CanvasElement } from '@/components/CanvasEditor'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeKey, PhotoStyle, FONTS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
-import { PreviewItem, getDefaultItemOrder } from '@/components/Preview'
 import { generateSubdomain } from '@/lib/utils'
 
 export default function CreatePage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
   // Form state
   const [photos, setPhotos] = useState<string[]>([])
@@ -26,7 +24,7 @@ export default function CreatePage() {
   const [theme, setTheme] = useState<ThemeKey>('pink')
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('polaroid')
   const [font, setFont] = useState<string>(FONTS[0].name)
-  const [itemOrder, setItemOrder] = useState<PreviewItem[]>(() => getDefaultItemOrder(0, false))
+  const [canvasState, setCanvasState] = useState<CanvasElement[]>([])
 
   // Subdomain availability
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null)
@@ -88,7 +86,7 @@ export default function CreatePage() {
           photoStyle,
           font,
           photos,
-          itemOrder: itemOrder.join(','),
+          canvasState: JSON.stringify(canvasState),
           userId: user?.id,
         }),
       })
@@ -197,7 +195,7 @@ export default function CreatePage() {
         </div>
       </div>
 
-      {/* Right side - Preview (fixed) */}
+      {/* Right side - Canvas Editor (fixed) */}
       <div className="hidden lg:flex flex-1 bg-white flex-col h-screen overflow-hidden">
         {/* Floating toolbar */}
         <div className="flex items-center justify-center gap-2 py-3">
@@ -225,40 +223,18 @@ export default function CreatePage() {
           <div className="bg-white rounded-full shadow-sm px-3 py-1.5 border border-gray-100">
             <PhotoStyleToggle value={photoStyle} onChange={setPhotoStyle} />
           </div>
-
-          {/* View mode toggle */}
-          <div className="bg-white rounded-full shadow-sm px-1.5 py-1 border border-gray-100 flex gap-0.5">
-            <button
-              onClick={() => setViewMode('desktop')}
-              className={`p-1 rounded-full ${viewMode === 'desktop' ? 'bg-gray-100' : ''}`}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('mobile')}
-              className={`p-1 rounded-full ${viewMode === 'mobile' ? 'bg-gray-100' : ''}`}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
-        {/* Preview */}
-        <div className="flex-1 flex items-start justify-center pt-4 px-8">
-          <Preview
-            recipientName={recipientName}
-            message={message}
+        {/* Canvas Editor */}
+        <div className="flex-1 flex items-start justify-center pt-4 px-8 overflow-auto">
+          <CanvasEditor
             photos={photos}
+            message={message}
+            spotifyLink={spotifyLink}
             theme={theme}
             photoStyle={photoStyle}
-            spotifyLink={spotifyLink}
-            viewMode={viewMode}
-            itemOrder={itemOrder}
-            onItemOrderChange={setItemOrder}
+            canvasState={canvasState}
+            onCanvasStateChange={setCanvasState}
           />
         </div>
       </div>

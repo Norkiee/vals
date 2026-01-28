@@ -133,8 +133,21 @@ export default function ValentinePage() {
   const elements = canvasLayout?.mobile || []
   const fontSize = valentine.font_size || 16
 
-  // Scale factor for rendering on actual screen
-  const scale = isMobile ? Math.min(window.innerWidth / MOBILE_WIDTH, 1.8) : 1.5
+  // Calculate scale to fit screen while maintaining aspect ratio
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const calculateScale = () => {
+      const screenWidth = window.innerWidth
+      const screenHeight = window.innerHeight
+      const scaleX = (screenWidth - 32) / MOBILE_WIDTH // 32px padding
+      const scaleY = (screenHeight - 80) / MOBILE_HEIGHT // 80px for margins
+      setScale(Math.min(scaleX, scaleY, 2.5)) // Cap at 2.5x
+    }
+    calculateScale()
+    window.addEventListener('resize', calculateScale)
+    return () => window.removeEventListener('resize', calculateScale)
+  }, [])
 
   const renderPhoto = (element: CanvasElement) => {
     const photo = valentine.photos[element.photoIndex || 0]
@@ -147,10 +160,10 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: element.x * scale,
-          top: element.y * scale,
-          width: element.width * scale,
-          height: element.height * scale,
+          left: element.x,
+          top: element.y,
+          width: element.width,
+          height: element.height,
           transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
@@ -183,15 +196,15 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: element.x * scale,
-          top: element.y * scale,
-          width: element.width * scale,
+          left: element.x,
+          top: element.y,
+          width: element.width,
           zIndex: element.zIndex,
         }}
       >
         <p
           className="font-loveheart text-gray-800 leading-relaxed"
-          style={{ fontSize: fontSize * scale * 0.7 }}
+          style={{ fontSize: fontSize }}
         >
           {valentine.message}
         </p>
@@ -205,9 +218,9 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: element.x * scale,
-          top: element.y * scale,
-          width: element.width * scale,
+          left: element.x,
+          top: element.y,
+          width: element.width,
           zIndex: element.zIndex,
         }}
       >
@@ -255,9 +268,9 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: element.x * scale,
-          top: element.y * scale,
-          width: element.width * scale,
+          left: element.x,
+          top: element.y,
+          width: element.width,
           zIndex: element.zIndex,
         }}
       >
@@ -403,14 +416,16 @@ export default function ValentinePage() {
   // Render with canvas layout
   return (
     <main
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-screen flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: themeColors.bgColor }}
     >
       <div
         className="relative"
         style={{
-          width: MOBILE_WIDTH * scale,
-          height: MOBILE_HEIGHT * scale,
+          width: MOBILE_WIDTH,
+          height: MOBILE_HEIGHT,
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
         }}
       >
         {elements.map(renderElement)}
@@ -418,10 +433,10 @@ export default function ValentinePage() {
         {/* From - always at the bottom */}
         {valentine.sender_name && (
           <div
-            className="absolute bottom-4 left-0 right-0 text-center"
+            className="absolute bottom-2 left-0 right-0 text-center"
             style={{ zIndex: 1000 }}
           >
-            <p className="text-gray-600 text-xs">
+            <p className="text-gray-600 text-[10px]">
               With love from <span className="font-medium">{valentine.sender_name}</span>
             </p>
           </div>

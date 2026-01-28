@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
 
   // Get the root domain from environment or default
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.com'
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.xyz'
 
   // Check if we're on localhost for development
   const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1')
@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     subdomain = null
   } else {
     // Extract subdomain from hostname
-    // e.g., sarah.askcuter.com -> sarah
+    // e.g., sarah.askcuter.xyz -> sarah
     const hostParts = hostname.replace(`.${rootDomain}`, '').split('.')
     if (hostParts.length > 0 && hostParts[0] !== rootDomain.split('.')[0]) {
       subdomain = hostParts[0]

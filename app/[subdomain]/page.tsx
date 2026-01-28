@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
@@ -224,7 +224,7 @@ export default function ValentinePage() {
 
   // Group consecutive photos for display
   const renderContent = () => {
-    const elements: JSX.Element[] = []
+    const elements: React.ReactElement[] = []
     let photoGroup: string[] = []
 
     const flushPhotoGroup = () => {

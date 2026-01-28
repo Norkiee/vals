@@ -273,33 +273,38 @@ export default function CanvasEditor({
   }, [isDragging, selectedId, dragStart, elementStart, getMousePosition, canvasWidth, canvasHeight])
 
   // Rotation handlers
+  const [startAngle, setStartAngle] = useState(0)
+
   const handleRotateStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string) => {
     e.stopPropagation()
     const element = elements.find(el => el.id === id)
     if (!element) return
 
+    const pos = getMousePosition(e)
+    const centerX = element.x + element.width / 2
+    const centerY = element.y + element.height / 2
+    const initialAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * (180 / Math.PI)
+
     setSelectedId(id)
     setIsRotating(true)
-    setDragStart(getMousePosition(e))
+    setStartAngle(initialAngle)
     setElementStart({ x: element.x, y: element.y, width: element.width, height: element.height, rotation: element.rotation })
   }, [elements, getMousePosition])
 
   const handleRotateMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (!isRotating || !selectedId) return
 
-    const element = elements.find(el => el.id === selectedId)
-    if (!element) return
-
     const pos = getMousePosition(e)
-    const centerX = element.x + element.width / 2
-    const centerY = element.y + element.height / 2
+    const centerX = elementStart.x + elementStart.width / 2
+    const centerY = elementStart.y + elementStart.height / 2
 
-    const angle = Math.atan2(pos.y - centerY, pos.x - centerX) * (180 / Math.PI) + 90
+    const currentAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * (180 / Math.PI)
+    const deltaAngle = currentAngle - startAngle
 
     setElements(prev => prev.map(el =>
-      el.id === selectedId ? { ...el, rotation: angle } : el
+      el.id === selectedId ? { ...el, rotation: elementStart.rotation + deltaAngle } : el
     ))
-  }, [isRotating, selectedId, elements, getMousePosition])
+  }, [isRotating, selectedId, elementStart, startAngle, getMousePosition])
 
   // Resize handlers
   const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string, handle: string) => {
@@ -402,7 +407,7 @@ export default function CanvasEditor({
                   src={photo}
                   alt={`Photo ${(element.photoIndex || 0) + 1}`}
                   fill
-                  className="object-cover grayscale"
+                  className="object-cover"
                   draggable={false}
                 />
               </div>

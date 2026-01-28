@@ -1,65 +1,78 @@
-import Image from "next/image";
+'use client'
+
+import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
+      {/* Polaroid photos arrangement */}
+      <div className="relative w-full max-w-lg h-64 md:h-80 mb-8">
+        {/* Left polaroid */}
+        <div className="absolute left-4 md:left-8 top-8 transform -rotate-12 z-10">
+          <div className="polaroid w-28 md:w-36">
+            <div className="aspect-square bg-gray-300 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
+                <span className="text-gray-500 text-xs">Photo</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Center music card */}
+        <div className="absolute left-1/2 top-4 transform -translate-x-1/2 z-20">
+          <div className="polaroid w-32 md:w-40">
+            <div className="aspect-square bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 relative overflow-hidden flex flex-col items-center justify-center p-4">
+              <p className="font-loveheart text-white text-center text-sm md:text-base italic">
+                Forever<br />With You
+              </p>
+            </div>
+            <div className="bg-white px-2 py-2 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-sm flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-medium truncate">Music title</p>
+                <p className="text-[8px] text-gray-500 truncate">Artist name</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="#1DB954">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                  <span className="text-[8px] text-gray-400">Spotify</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        {/* Right polaroid */}
+        <div className="absolute right-4 md:right-8 top-12 transform rotate-12 z-10">
+          <div className="polaroid w-28 md:w-36">
+            <div className="aspect-square bg-gray-300 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
+                <span className="text-gray-500 text-xs">Photo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Title */}
+      <h1 className="font-loveheart text-5xl md:text-7xl text-amber-600 mb-8 text-center">
+        ASK CUTER
+      </h1>
+
+      {/* CTA Button */}
+      <Link
+        href="/create"
+        className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+      >
+        Create your valentine
+      </Link>
+
+      {/* Heart decoration */}
+      <div className="absolute bottom-8 left-8 text-red-400 opacity-60">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </div>
+    </main>
+  )
 }

@@ -129,7 +129,20 @@ export default function ValentinePage() {
   }
 
   const themeColors = THEMES[valentine.theme] || THEMES.pink
-  const canvasLayout = valentine.canvas_layout
+
+  // Parse canvas_layout if it's a string
+  let canvasLayout: CanvasState | null = null
+  try {
+    if (valentine.canvas_layout) {
+      canvasLayout = typeof valentine.canvas_layout === 'string'
+        ? JSON.parse(valentine.canvas_layout)
+        : valentine.canvas_layout
+    }
+  } catch (e) {
+    console.error('Error parsing canvas_layout:', e)
+    canvasLayout = null
+  }
+
   const elements = canvasLayout?.mobile || []
   const fontSize = valentine.font_size || 16
 
@@ -292,22 +305,29 @@ export default function ValentinePage() {
   }
 
   const renderElement = (element: CanvasElement) => {
-    switch (element.type) {
-      case 'photo':
-        return renderPhoto(element)
-      case 'text':
-        return renderText(element)
-      case 'buttons':
-        return renderButtons(element)
-      case 'spotify':
-        return renderSpotify(element)
-      default:
-        return null
+    try {
+      if (!element || !element.type) return null
+      switch (element.type) {
+        case 'photo':
+          return renderPhoto(element)
+        case 'text':
+          return renderText(element)
+        case 'buttons':
+          return renderButtons(element)
+        case 'spotify':
+          return renderSpotify(element)
+        default:
+          return null
+      }
+    } catch (e) {
+      console.error('Error rendering element:', e)
+      return null
     }
   }
 
+  // Always use fallback layout for now to debug
   // If not mounted yet or no canvas layout, render fallback
-  if (!mounted || !canvasLayout || elements.length === 0) {
+  if (!mounted || !canvasLayout || !Array.isArray(elements) || elements.length === 0) {
     return (
       <main
         className="min-h-screen"

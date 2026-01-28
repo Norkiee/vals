@@ -77,7 +77,7 @@ export function getSpotifyEmbedUrl(link: string): string | null {
   }
 
   if (type && id) {
-    return `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`
+    return `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0&autoplay=1`
   }
 
   return null

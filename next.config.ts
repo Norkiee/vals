@@ -4,14 +4,11 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   images: {
+    domains: ['kszgzmxshgmnometiuma.supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'kszgzmxshgmnometiuma.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: '**.supabase.co',
       },
       {
         protocol: 'https',

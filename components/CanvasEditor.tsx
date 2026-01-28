@@ -25,10 +25,14 @@ interface CanvasEditorProps {
   photoStyle: PhotoStyle
   canvasState?: CanvasElement[]
   onCanvasStateChange?: (state: CanvasElement[]) => void
+  viewMode?: 'mobile' | 'desktop'
+  recipientName?: string
 }
 
-const CANVAS_WIDTH = 220
-const CANVAS_HEIGHT = 476
+const MOBILE_WIDTH = 220
+const MOBILE_HEIGHT = 476
+const DESKTOP_WIDTH = 500
+const DESKTOP_HEIGHT = 320
 
 export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): CanvasElement[] {
   const elements: CanvasElement[] = []
@@ -98,6 +102,8 @@ export default function CanvasEditor({
   photoStyle,
   canvasState,
   onCanvasStateChange,
+  viewMode = 'mobile',
+  recipientName = '',
 }: CanvasEditorProps) {
   const themeColors = THEMES[theme]
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -202,6 +208,9 @@ export default function CanvasEditor({
     bringToFront(id)
   }, [elements, getMousePosition, bringToFront])
 
+  const canvasWidth = viewMode === 'mobile' ? MOBILE_WIDTH : DESKTOP_WIDTH
+  const canvasHeight = viewMode === 'mobile' ? MOBILE_HEIGHT : DESKTOP_HEIGHT
+
   const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (!isDragging || !selectedId) return
 
@@ -211,11 +220,11 @@ export default function CanvasEditor({
 
     setElements(prev => prev.map(el =>
       el.id === selectedId
-        ? { ...el, x: Math.max(0, Math.min(CANVAS_WIDTH - el.width, elementStart.x + deltaX)),
-                   y: Math.max(0, Math.min(CANVAS_HEIGHT - el.height, elementStart.y + deltaY)) }
+        ? { ...el, x: Math.max(0, Math.min(canvasWidth - el.width, elementStart.x + deltaX)),
+                   y: Math.max(0, Math.min(canvasHeight - el.height, elementStart.y + deltaY)) }
         : el
     ))
-  }, [isDragging, selectedId, dragStart, elementStart, getMousePosition])
+  }, [isDragging, selectedId, dragStart, elementStart, getMousePosition, canvasWidth, canvasHeight])
 
   // Rotation handlers
   const handleRotateStart = useCallback((e: React.MouseEvent | React.TouchEvent, id: string) => {
@@ -464,6 +473,51 @@ export default function CanvasEditor({
     )
   }
 
+  if (viewMode === 'desktop') {
+    return (
+      <div className="flex flex-col items-center">
+        {/* Browser frame */}
+        <div className="bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-lg">
+          {/* Browser chrome */}
+          <div className="bg-gray-200 px-4 py-2 flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-400" />
+              <div className="w-3 h-3 rounded-full bg-yellow-400" />
+              <div className="w-3 h-3 rounded-full bg-green-400" />
+            </div>
+            <div className="flex-1 text-center text-xs text-gray-500 bg-white rounded px-3 py-1">
+              {recipientName ? `${recipientName.toLowerCase().replace(/\s+/g, '-')}.askcuter.com` : 'preview'}
+            </div>
+          </div>
+          {/* Screen content */}
+          <div
+            ref={canvasRef}
+            className="relative overflow-hidden"
+            style={{
+              width: canvasWidth,
+              height: canvasHeight,
+              backgroundColor: themeColors.bgColor,
+            }}
+            onClick={() => setSelectedId(null)}
+          >
+            {elements.map(renderElement)}
+          </div>
+        </div>
+
+        {/* Info */}
+        {selectedId && (
+          <div className="mt-2 text-xs text-gray-500">
+            {(() => {
+              const el = elements.find(e => e.id === selectedId)
+              if (!el) return null
+              return `X: ${Math.round(el.x)} Y: ${Math.round(el.y)} R: ${Math.round(el.rotation)}°`
+            })()}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col items-center">
       {/* Phone frame */}
@@ -477,13 +531,12 @@ export default function CanvasEditor({
           ref={canvasRef}
           className="rounded-[32px] overflow-hidden relative"
           style={{
-            width: CANVAS_WIDTH,
-            height: CANVAS_HEIGHT,
+            width: canvasWidth,
+            height: canvasHeight,
             backgroundColor: themeColors.bgColor,
           }}
           onClick={() => setSelectedId(null)}
         >
-          {/* Elements are positioned absolutely, account for top padding */}
           {elements.map(renderElement)}
         </div>
       </div>

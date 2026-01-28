@@ -70,9 +70,10 @@ export default function ValentinePage() {
       const screenHeight = window.innerHeight
       const baseWidth = mobile ? MOBILE_WIDTH : 800
       const baseHeight = mobile ? MOBILE_HEIGHT : 500
-      const scaleX = (screenWidth - 32) / baseWidth
-      const scaleY = (screenHeight - 80) / baseHeight
-      setScale(Math.min(scaleX, scaleY, mobile ? 2.5 : 1.2))
+      const scaleX = (screenWidth - 64) / baseWidth
+      const scaleY = (screenHeight - 100) / baseHeight
+      // Allow desktop to scale up more to fill screen
+      setScale(Math.min(scaleX, scaleY, mobile ? 2.5 : 2))
     }
     checkMobile()
     calculateScale()

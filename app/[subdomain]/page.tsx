@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import Image from 'next/image'
+/* eslint-disable @next/next/no-img-element */
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
 import SpotifyCard from '@/components/SpotifyCard'
 
@@ -135,12 +135,11 @@ export default function ValentinePage() {
           ['--theme-primary' as string]: themeColors.primary,
         }}
       >
-        <div className="w-28 h-28 md:w-36 md:h-36 relative">
-          <Image
+        <div className="w-28 h-28 md:w-36 md:h-36 relative overflow-hidden">
+          <img
             src={photo.photo_url}
             alt={`Photo ${photoIndex + 1}`}
-            fill
-            className="object-cover grayscale"
+            className="w-full h-full object-cover grayscale"
           />
         </div>
       </div>

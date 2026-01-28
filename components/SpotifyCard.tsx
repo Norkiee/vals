@@ -1,7 +1,7 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
 import { useState } from 'react'
-import Image from 'next/image'
 import { getSpotifyEmbedUrl } from '@/lib/spotify'
 
 interface SpotifyCardProps {
@@ -36,13 +36,12 @@ export default function SpotifyCard({
         {/* Our custom card */}
         <div className="p-1 flex items-center gap-1.5">
           {/* Album art / Thumbnail */}
-          <div className="w-7 h-7 rounded flex-shrink-0 overflow-hidden relative">
+          <div className="w-7 h-7 rounded flex-shrink-0 overflow-hidden">
             {thumbnail ? (
-              <Image
+              <img
                 src={thumbnail}
                 alt={`${title} album art`}
-                fill
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />
@@ -108,13 +107,12 @@ export default function SpotifyCard({
       {/* Our custom card */}
       <div className="p-3 flex items-center gap-3">
         {/* Album art / Thumbnail */}
-        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden relative">
+        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden">
           {thumbnail ? (
-            <Image
+            <img
               src={thumbnail}
               alt={`${title} album art`}
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />

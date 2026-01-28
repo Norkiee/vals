@@ -27,11 +27,12 @@ interface CanvasEditorProps {
   onCanvasStateChange?: (state: CanvasElement[]) => void
 }
 
-const CANVAS_WIDTH = 375
-const CANVAS_HEIGHT = 667
+const CANVAS_WIDTH = 220
+const CANVAS_HEIGHT = 476
 
 export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): CanvasElement[] {
   const elements: CanvasElement[] = []
+  const TOP_OFFSET = 40 // Account for Dynamic Island
 
   // Position photos in a scattered layout
   for (let i = 0; i < photoCount; i++) {
@@ -39,11 +40,11 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): 
       id: `photo-${i}`,
       type: 'photo',
       photoIndex: i,
-      x: 40 + (i % 2) * 150,
-      y: 40 + Math.floor(i / 2) * 140,
-      width: 120,
-      height: 120,
-      rotation: (i % 2 === 0 ? -8 : 8),
+      x: 30 + (i % 2) * 80,
+      y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+      width: 70,
+      height: 70,
+      rotation: (i % 2 === 0 ? -5 : 5),
       zIndex: i + 1,
     })
   }
@@ -52,10 +53,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): 
   elements.push({
     id: 'text-1',
     type: 'text',
-    x: 20,
-    y: photoCount > 0 ? 300 : 200,
-    width: 335,
-    height: 80,
+    x: 10,
+    y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
+    width: 200,
+    height: 60,
     rotation: 0,
     zIndex: photoCount + 1,
   })
@@ -64,10 +65,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): 
   elements.push({
     id: 'buttons-1',
     type: 'buttons',
-    x: 80,
-    y: photoCount > 0 ? 400 : 300,
-    width: 215,
-    height: 50,
+    x: 30,
+    y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
+    width: 160,
+    height: 40,
     rotation: 0,
     zIndex: photoCount + 2,
   })
@@ -77,10 +78,10 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean): 
     elements.push({
       id: 'spotify-1',
       type: 'spotify',
-      x: 20,
-      y: 500,
-      width: 335,
-      height: 80,
+      x: 10,
+      y: TOP_OFFSET + 310,
+      width: 200,
+      height: 60,
       rotation: 0,
       zIndex: photoCount + 3,
     })
@@ -113,6 +114,7 @@ export default function CanvasEditor({
 
   // Update elements when photos change
   useEffect(() => {
+    const TOP_OFFSET = 40
     setElements(prev => {
       const existingPhotoIds = prev.filter(e => e.type === 'photo').map(e => e.photoIndex)
       const newElements = [...prev]
@@ -124,11 +126,11 @@ export default function CanvasEditor({
             id: `photo-${i}`,
             type: 'photo',
             photoIndex: i,
-            x: 40 + (i % 2) * 150,
-            y: 40 + Math.floor(i / 2) * 140,
-            width: 120,
-            height: 120,
-            rotation: (i % 2 === 0 ? -8 : 8),
+            x: 30 + (i % 2) * 80,
+            y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
+            width: 70,
+            height: 70,
+            rotation: (i % 2 === 0 ? -5 : 5),
             zIndex: newElements.length + 1,
           })
         }
@@ -143,14 +145,15 @@ export default function CanvasEditor({
 
   // Add spotify when link is added
   useEffect(() => {
+    const TOP_OFFSET = 40
     if (spotifyLink && !elements.find(e => e.type === 'spotify')) {
       setElements(prev => [...prev, {
         id: 'spotify-1',
         type: 'spotify',
-        x: 20,
-        y: 500,
-        width: 335,
-        height: 80,
+        x: 10,
+        y: TOP_OFFSET + 310,
+        width: 200,
+        height: 60,
         rotation: 0,
         zIndex: prev.length + 1,
       }])
@@ -463,18 +466,26 @@ export default function CanvasEditor({
 
   return (
     <div className="flex flex-col items-center">
-      {/* Canvas */}
-      <div
-        ref={canvasRef}
-        className="relative border-2 border-gray-300 rounded-lg overflow-hidden"
-        style={{
-          width: CANVAS_WIDTH,
-          height: CANVAS_HEIGHT,
-          backgroundColor: themeColors.bgColor,
-        }}
-        onClick={() => setSelectedId(null)}
-      >
-        {elements.map(renderElement)}
+      {/* Phone frame */}
+      <div className="bg-gray-900 rounded-[40px] p-2 shadow-xl">
+        {/* Dynamic Island */}
+        <div className="bg-black rounded-t-[32px] relative">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-10" />
+        </div>
+        {/* Screen */}
+        <div
+          ref={canvasRef}
+          className="rounded-[32px] overflow-hidden relative"
+          style={{
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            backgroundColor: themeColors.bgColor,
+          }}
+          onClick={() => setSelectedId(null)}
+        >
+          {/* Elements are positioned absolutely, account for top padding */}
+          {elements.map(renderElement)}
+        </div>
       </div>
 
       {/* Info */}
@@ -483,7 +494,7 @@ export default function CanvasEditor({
           {(() => {
             const el = elements.find(e => e.id === selectedId)
             if (!el) return null
-            return `X: ${Math.round(el.x)} Y: ${Math.round(el.y)} W: ${Math.round(el.width)} H: ${Math.round(el.height)} R: ${Math.round(el.rotation)}°`
+            return `X: ${Math.round(el.x)} Y: ${Math.round(el.y)} R: ${Math.round(el.rotation)}°`
           })()}
         </div>
       )}

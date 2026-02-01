@@ -56,14 +56,25 @@ export default function ValentinePage() {
   const [responded, setResponded] = useState(false)
   const [response, setResponse] = useState<boolean | null>(null)
   const [isMobile, setIsMobile] = useState(true)
+  const [scale, setScale] = useState(1)
+  const [screenHeight, setScreenHeight] = useState(0)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const update = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      setScreenHeight(window.innerHeight)
+      const bw = mobile ? MOBILE_WIDTH : DESKTOP_WIDTH
+      const bh = mobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
+      const sx = window.innerWidth / bw
+      const sy = window.innerHeight / bh
+      setScale(Math.min(sx, sy))
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
   }, [])
 
   useEffect(() => {
@@ -156,16 +167,6 @@ export default function ValentinePage() {
   const baseW = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH
   const baseH = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
 
-  // Convert pixel position to percentage of base canvas
-  const pct = (px: number, base: number) => (px / base) * 100
-
-  // Scale font sizes relative to viewport width instead of the tiny editor canvas
-  const fontScale = (editorFontSize: number, elementWidthPct: number) => {
-    // elementWidthPct is the element's width as % of viewport
-    // Scale font relative to that so it fills the element properly
-    return `clamp(12px, ${editorFontSize * (elementWidthPct / 100) * 4}vw, 64px)`
-  }
-
   const renderPhoto = (element: CanvasElement) => {
     const photoIndex = element.photoIndex ?? 0
     if (!valentine.photos || photoIndex >= valentine.photos.length) return null
@@ -179,10 +180,10 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: `${pct(element.x, baseW)}%`,
-          top: `${pct(element.y, baseH)}%`,
-          width: `${pct(element.width, baseW)}%`,
-          height: `${pct(element.height, baseH)}%`,
+          left: element.x,
+          top: element.y,
+          width: element.width,
+          height: element.height,
           transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
@@ -210,23 +211,21 @@ export default function ValentinePage() {
   const renderText = (element: CanvasElement) => {
     if (!valentine.message) return null
 
-    const widthPct = pct(element.width, baseW)
-
     return (
       <div
         key={element.id}
-        className="absolute flex items-center justify-center p-[2%]"
+        className="absolute flex items-center justify-center p-1"
         style={{
-          left: `${pct(element.x, baseW)}%`,
-          top: `${pct(element.y, baseH)}%`,
-          width: `${widthPct}%`,
-          height: `${pct(element.height, baseH)}%`,
+          left: element.x,
+          top: element.y,
+          width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
         <p
           className="font-loveheart text-gray-800 leading-relaxed text-center"
-          style={{ fontSize: fontScale(fontSize, widthPct) }}
+          style={{ fontSize }}
         >
           {valentine.message}
         </p>
@@ -235,57 +234,49 @@ export default function ValentinePage() {
   }
 
   const renderButtons = (element: CanvasElement) => {
-    const widthPct = pct(element.width, baseW)
-
     return (
       <div
         key={element.id}
         className="absolute flex items-center justify-center"
         style={{
-          left: `${pct(element.x, baseW)}%`,
-          top: `${pct(element.y, baseH)}%`,
-          width: `${widthPct}%`,
-          height: `${pct(element.height, baseH)}%`,
+          left: element.x,
+          top: element.y,
+          width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
         {!responded ? (
-          <div className="flex items-center justify-center gap-[8%]">
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => handleResponse(true)}
-              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
-              style={{
-                backgroundColor: themeColors.primary,
-                fontSize: fontScale(12, widthPct),
-                padding: `1.5vw 4vw`,
-              }}
+              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all px-6 py-2 text-sm"
+              style={{ backgroundColor: themeColors.primary }}
             >
               Yes
             </button>
             <button
               onClick={() => handleResponse(false)}
-              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
+              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all px-6 py-2 text-sm"
               style={{
                 borderColor: themeColors.primary,
                 color: themeColors.primary,
-                fontSize: fontScale(12, widthPct),
-                padding: `1.5vw 4vw`,
               }}
             >
               No
             </button>
           </div>
         ) : (
-          <div className="text-center bg-white/80 rounded-xl p-[4%] shadow-md">
+          <div className="text-center bg-white/80 rounded-xl p-3 shadow-md">
             {response ? (
               <>
-                <span className="text-2xl sm:text-3xl mb-1 block">💕</span>
-                <p className="font-loveheart text-base sm:text-lg text-gray-800">Yay!</p>
+                <span className="text-xl mb-1 block">💕</span>
+                <p className="font-loveheart text-sm text-gray-800">Yay!</p>
               </>
             ) : (
               <>
-                <span className="text-2xl sm:text-3xl mb-1 block">💔</span>
-                <p className="font-loveheart text-base sm:text-lg text-gray-800">Maybe next time</p>
+                <span className="text-xl mb-1 block">💔</span>
+                <p className="font-loveheart text-sm text-gray-800">Maybe next time</p>
               </>
             )}
           </div>
@@ -302,10 +293,10 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute overflow-hidden"
         style={{
-          left: `${pct(element.x, baseW)}%`,
-          top: `${pct(element.y, baseH)}%`,
-          width: `${pct(element.width, baseW)}%`,
-          height: `${pct(element.height, baseH)}%`,
+          left: element.x,
+          top: element.y,
+          width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
@@ -449,34 +440,42 @@ export default function ValentinePage() {
     )
   }
 
-  // Render with canvas layout — percentage-based positioning
+  // Render with canvas layout — scale transform to fit screen
+  // Elements are placed at their original pixel positions, then the
+  // whole container is uniformly scaled to fill the viewport.
+  const scaledW = baseW * scale
+  const scaledH = baseH * scale
+
   return (
     <main
-      className="min-h-screen relative overflow-hidden"
-      style={{
-        backgroundColor: themeColors.bgColor,
-        // Maintain the aspect ratio of the original canvas
-        aspectRatio: `${baseW} / ${baseH}`,
-        maxHeight: '100vh',
-        margin: '0 auto',
-      }}
+      className="w-screen h-screen overflow-hidden flex flex-col items-center"
+      style={{ backgroundColor: themeColors.bgColor }}
     >
-      {/* Container that maps to the canvas coordinate space */}
-      <div className="relative w-full h-full" style={{ minHeight: '100vh' }}>
+      {/* Scaled canvas — maintains exact editor proportions */}
+      <div
+        className="relative flex-shrink-0"
+        style={{
+          width: baseW,
+          height: baseH,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top center',
+          marginTop: scaledH < screenHeight ? (screenHeight - scaledH) / 2 / scale : 0,
+        }}
+      >
         {elements.map(renderElement)}
-
-        {/* From — pinned to bottom */}
-        {valentine.sender_name && (
-          <div
-            className="absolute bottom-4 left-0 right-0 text-center"
-            style={{ zIndex: 1000 }}
-          >
-            <p className="text-gray-500 text-xs sm:text-sm">
-              With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
-            </p>
-          </div>
-        )}
       </div>
+
+      {/* From — outside scaled area, pinned to bottom of screen */}
+      {valentine.sender_name && (
+        <div
+          className="fixed bottom-3 left-0 right-0 text-center"
+          style={{ zIndex: 1000 }}
+        >
+          <p className="text-gray-500 text-xs sm:text-sm">
+            With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
+          </p>
+        </div>
+      )}
     </main>
   )
 }

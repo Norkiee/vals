@@ -347,60 +347,72 @@ export default function CanvasEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spotifyLink])
 
-  // Ref for measuring actual rendered text content height
+  // Refs for measuring actual rendered content height
   const textContentRef = useRef<HTMLParagraphElement>(null)
+  const buttonsContentRef = useRef<HTMLDivElement>(null)
+  const spotifyContentRef = useRef<HTMLDivElement>(null)
 
-  // Auto-fit text element bounding box to content (grow AND shrink)
-  // Active mode uses real DOM measurement; other mode uses off-screen measurement
-  const MIN_TEXT_HEIGHT = 30
+  // Auto-fit bounding boxes to content for text, buttons, and spotify
+  const MIN_ELEMENT_HEIGHT = 30
 
   useLayoutEffect(() => {
-    if (!message) return
+    // Measure each element type from its ref and fit the bounding box
+    const refMap: { type: string; ref: React.RefObject<HTMLElement | null>; padding: number }[] = [
+      { type: 'text', ref: textContentRef, padding: 16 },
+      { type: 'buttons', ref: buttonsContentRef, padding: 8 },
+      { type: 'spotify', ref: spotifyContentRef, padding: 0 },
+    ]
 
-    // Fit the currently rendered mode using the actual DOM element
-    if (textContentRef.current) {
-      const textEl = elements.find(el => el.type === 'text')
-      if (textEl) {
+    let updates: Record<string, number> = {}
+
+    for (const { type, ref, padding } of refMap) {
+      if (!ref.current) continue
+      const el = elements.find(e => e.type === type)
+      if (!el) continue
+      const needed = Math.max(MIN_ELEMENT_HEIGHT, ref.current.scrollHeight + padding)
+      if (Math.abs(needed - el.height) > 1) {
+        updates[el.id] = needed
+      }
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setElements(prev => prev.map(el =>
+        updates[el.id] != null ? { ...el, height: updates[el.id] } : el
+      ))
+    }
+
+    // Fit the OTHER mode's text element via off-screen measurement
+    if (message) {
+      const otherSetElements = viewMode === 'mobile' ? setDesktopElements : setMobileElements
+      const otherElements = viewMode === 'mobile' ? desktopElements : mobileElements
+      const otherTextEl = otherElements.find(el => el.type === 'text')
+      if (otherTextEl) {
+        const textScale = otherTextEl.width / 200
+        const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
         const padding = 16
-        const needed = Math.max(MIN_TEXT_HEIGHT, textContentRef.current.scrollHeight + padding)
-        if (Math.abs(needed - textEl.height) > 1) {
-          setElements(prev => prev.map(el =>
-            el.id === textEl.id ? { ...el, height: needed } : el
+        const measurer = document.createElement('div')
+        measurer.style.position = 'absolute'
+        measurer.style.visibility = 'hidden'
+        measurer.style.width = `${otherTextEl.width - padding}px`
+        measurer.style.fontSize = `${scaledFontSize}px`
+        measurer.style.fontFamily = `'${font}', cursive`
+        measurer.style.lineHeight = '1.625'
+        measurer.style.textAlign = 'center'
+        measurer.style.whiteSpace = 'pre-wrap'
+        measurer.style.wordBreak = 'break-word'
+        measurer.textContent = message
+        document.body.appendChild(measurer)
+        const needed = Math.max(MIN_ELEMENT_HEIGHT, measurer.scrollHeight + padding)
+        document.body.removeChild(measurer)
+        if (Math.abs(needed - otherTextEl.height) > 1) {
+          otherSetElements(prev => prev.map(el =>
+            el.id === otherTextEl.id ? { ...el, height: needed } : el
           ))
         }
       }
     }
-
-    // Fit the OTHER mode via off-screen measurement so it stays in sync
-    const otherSetElements = viewMode === 'mobile' ? setDesktopElements : setMobileElements
-    const otherElements = viewMode === 'mobile' ? desktopElements : mobileElements
-    const otherTextEl = otherElements.find(el => el.type === 'text')
-    if (otherTextEl) {
-      const textScale = otherTextEl.width / 200
-      const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
-      const padding = 16
-      const measurer = document.createElement('div')
-      measurer.style.position = 'absolute'
-      measurer.style.visibility = 'hidden'
-      measurer.style.width = `${otherTextEl.width - padding}px`
-      measurer.style.fontSize = `${scaledFontSize}px`
-      measurer.style.fontFamily = `'${font}', cursive`
-      measurer.style.lineHeight = '1.625'
-      measurer.style.textAlign = 'center'
-      measurer.style.whiteSpace = 'pre-wrap'
-      measurer.style.wordBreak = 'break-word'
-      measurer.textContent = message
-      document.body.appendChild(measurer)
-      const needed = Math.max(MIN_TEXT_HEIGHT, measurer.scrollHeight + padding)
-      document.body.removeChild(measurer)
-      if (Math.abs(needed - otherTextEl.height) > 1) {
-        otherSetElements(prev => prev.map(el =>
-          el.id === otherTextEl.id ? { ...el, height: needed } : el
-        ))
-      }
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, fontSize, font, viewMode])
+  }, [message, fontSize, font, viewMode, spotifyLink, spotifyMeta])
 
   // Notify parent of state changes - send both states
   useEffect(() => {
@@ -724,7 +736,7 @@ export default function CanvasEditor({
           const btnPaddingY = Math.max(4, Math.min(16, 6 * buttonScale))
           const btnGap = Math.max(8, Math.min(24, 12 * buttonScale))
           return (
-            <div className="w-full h-full flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
+            <div ref={buttonsContentRef} className="w-full h-full flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
               <button
                 className="rounded-full text-white font-medium"
                 style={{
@@ -752,7 +764,7 @@ export default function CanvasEditor({
         case 'spotify':
           const usePlaceholder = !spotifyLink || templateMode
           return (
-            <div className="w-full h-full overflow-hidden">
+            <div ref={spotifyContentRef} className="w-full h-full overflow-hidden">
               <SpotifyCard
                 spotifyLink={usePlaceholder ? 'https://open.spotify.com/track/placeholder' : spotifyLink}
                 title={usePlaceholder ? 'Song title' : spotifyMeta?.title}

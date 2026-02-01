@@ -33,6 +33,13 @@ export type ThemeKey = keyof typeof THEMES
 
 export const FONTS = [
   { name: 'Loveheart', file: 'Loveheart-Regular.ttf', displayName: 'Loveheart' },
+  { name: 'Dancing Script', file: 'DancingScript-Regular.ttf', displayName: 'Dancing Script' },
+  { name: 'Great Vibes', file: 'GreatVibes-Regular.ttf', displayName: 'Great Vibes' },
+  { name: 'Pacifico', file: 'Pacifico-Regular.ttf', displayName: 'Pacifico' },
+  { name: 'Sacramento', file: 'Sacramento-Regular.ttf', displayName: 'Sacramento' },
+  { name: 'Caveat', file: 'Caveat-Regular.ttf', displayName: 'Caveat' },
+  { name: 'Cookie', file: 'Cookie-Regular.ttf', displayName: 'Cookie' },
+  { name: 'Satisfy', file: 'Satisfy-Regular.ttf', displayName: 'Satisfy' },
 ] as const
 
 export const PHOTO_STYLES = ['polaroid', 'hearts'] as const

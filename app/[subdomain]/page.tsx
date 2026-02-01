@@ -144,6 +144,7 @@ export default function ValentinePage() {
   }
 
   const themeColors = THEMES[valentine.theme] || THEMES.pink
+  const fontFamily = `'${valentine.font_family || 'Loveheart'}', cursive`
 
   // Parse canvas_layout if it's a string
   let canvasLayout: CanvasState | null = null
@@ -232,8 +233,8 @@ export default function ValentinePage() {
       >
         <div className="animate-sway">
           <p
-            className="font-loveheart text-gray-800 leading-relaxed text-center"
-            style={{ fontSize }}
+            className="text-gray-800 leading-relaxed text-center"
+            style={{ fontSize, fontFamily }}
           >
             {valentine.message}
           </p>
@@ -281,12 +282,12 @@ export default function ValentinePage() {
             {response ? (
               <>
                 <span className="text-xl mb-1 block">💕</span>
-                <p className="font-loveheart text-sm text-gray-800">Yay!</p>
+                <p className="text-sm text-gray-800" style={{ fontFamily }}>Yay!</p>
               </>
             ) : (
               <>
                 <span className="text-xl mb-1 block">💔</span>
-                <p className="font-loveheart text-sm text-gray-800">Maybe next time</p>
+                <p className="text-sm text-gray-800" style={{ fontFamily }}>Maybe next time</p>
               </>
             )}
           </div>
@@ -444,7 +445,8 @@ export default function ValentinePage() {
           {valentine.message && (
             <div className="text-center mb-8 px-2 animate-sway">
               <p
-                className="font-loveheart leading-relaxed text-gray-800 text-xl sm:text-2xl"
+                className="leading-relaxed text-gray-800 text-xl sm:text-2xl"
+                style={{ fontFamily }}
               >
                 {valentine.message}
               </p>
@@ -476,12 +478,12 @@ export default function ValentinePage() {
                   {response ? (
                     <>
                       <span className="text-4xl mb-2 block">💕</span>
-                      <p className="font-loveheart text-2xl text-gray-800">Yay! That&apos;s amazing!</p>
+                      <p className="text-2xl text-gray-800" style={{ fontFamily }}>Yay! That&apos;s amazing!</p>
                     </>
                   ) : (
                     <>
                       <span className="text-4xl mb-2 block">💔</span>
-                      <p className="font-loveheart text-2xl text-gray-800">Maybe next time...</p>
+                      <p className="text-2xl text-gray-800" style={{ fontFamily }}>Maybe next time...</p>
                     </>
                   )}
                 </div>

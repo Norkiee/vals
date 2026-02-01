@@ -71,7 +71,7 @@ export default function ValentinePage() {
       const bh = mobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
       const sx = window.innerWidth / bw
       const sy = window.innerHeight / bh
-      setScale(Math.min(sx, sy))
+      setScale(mobile ? sx : Math.min(sx, sy))
     }
     update()
     window.addEventListener('resize', update)
@@ -476,34 +476,33 @@ export default function ValentinePage() {
 
   return (
     <main
-      className="w-screen h-screen overflow-hidden flex flex-col items-center"
+      className="w-screen h-screen overflow-hidden"
       style={{ backgroundColor: themeColors.bgColor }}
     >
-      {/* Scaled canvas — maintains exact editor proportions */}
+      {/* Scaled canvas — fills screen width on mobile, fits viewport on desktop */}
       <div
-        className="relative flex-shrink-0"
+        className="relative"
         style={{
           width: baseW,
           height: baseH,
           transform: `scale(${scale})`,
-          transformOrigin: 'top center',
-          marginTop: scaledH < screenHeight ? (screenHeight - scaledH) / 2 / scale : 0,
+          transformOrigin: 'top left',
         }}
       >
         {elements.map(renderElement)}
-      </div>
 
-      {/* From — outside scaled area, pinned to bottom of screen */}
-      {valentine.sender_name && (
-        <div
-          className="fixed bottom-3 left-0 right-0 text-center"
-          style={{ zIndex: 1000 }}
-        >
-          <p className="text-gray-500 text-xs sm:text-sm">
-            With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
-          </p>
-        </div>
-      )}
+        {/* From — inside the canvas so it scales with everything */}
+        {valentine.sender_name && (
+          <div
+            className="absolute bottom-2 left-0 right-0 text-center"
+            style={{ zIndex: 1000 }}
+          >
+            <p className="text-gray-500 text-[8px]">
+              With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
+            </p>
+          </div>
+        )}
+      </div>
     </main>
   )
 }

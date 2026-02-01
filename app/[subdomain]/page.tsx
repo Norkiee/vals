@@ -1,7 +1,7 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
 import SpotifyCard from '@/components/SpotifyCard'
@@ -203,10 +203,14 @@ export default function ValentinePage() {
             style={{ ['--theme-primary' as string]: themeColors.primary }}
           >
             <div className="w-full h-full relative overflow-hidden">
-              <img
+              <Image
                 src={photo.photo_url}
                 alt="Photo"
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 50vw, 300px"
+                className="object-cover"
+                priority={photoIndex < 2}
+                loading={photoIndex < 2 ? 'eager' : 'lazy'}
               />
             </div>
           </div>
@@ -339,12 +343,14 @@ export default function ValentinePage() {
         <div className="w-full h-full animate-bob-2">
         <div className="w-full h-full bg-white rounded-md shadow-sm flex items-center gap-1.5 p-1">
           {/* Thumbnail */}
-          <div className="h-[80%] aspect-square rounded flex-shrink-0 overflow-hidden">
+          <div className="h-[80%] aspect-square rounded flex-shrink-0 overflow-hidden relative">
             {valentine.spotify_thumbnail ? (
-              <img
+              <Image
                 src={valentine.spotify_thumbnail}
                 alt="Album art"
-                className="w-full h-full object-cover"
+                fill
+                sizes="60px"
+                className="object-cover"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />
@@ -468,11 +474,15 @@ export default function ValentinePage() {
                         ['--theme-primary' as string]: themeColors.primary,
                       }}
                     >
-                      <div className="w-32 h-32 sm:w-36 sm:h-36 overflow-hidden">
-                        <img
+                      <div className="w-32 h-32 sm:w-36 sm:h-36 overflow-hidden relative">
+                        <Image
                           src={photo.photo_url}
                           alt={`Photo ${i + 1}`}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 128px, 144px"
+                          className="object-cover"
+                          priority={i < 2}
+                          loading={i < 2 ? 'eager' : 'lazy'}
                         />
                       </div>
                     </div>
@@ -486,8 +496,11 @@ export default function ValentinePage() {
           {valentine.message && (
             <div className="text-center mb-8 px-2 animate-sway">
               <p
-                className="leading-relaxed text-gray-800 text-xl sm:text-2xl"
-                style={{ fontFamily }}
+                className="leading-relaxed text-gray-800 break-words"
+                style={{
+                  fontFamily,
+                  fontSize: `clamp(${Math.max(14, fontSize * 0.8)}px, ${fontSize * 0.15}vw + ${fontSize * 0.7}px, ${fontSize * 1.5}px)`,
+                }}
               >
                 {valentine.message}
               </p>
@@ -500,15 +513,24 @@ export default function ValentinePage() {
               <div className="flex justify-center gap-4">
                 <button
                   onClick={() => handleResponse(true)}
-                  className="px-10 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transition-all"
-                  style={{ backgroundColor: themeColors.primary }}
+                  className="rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                  style={{
+                    backgroundColor: themeColors.primary,
+                    fontSize: `clamp(14px, 2vw + 8px, 20px)`,
+                    padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
+                  }}
                 >
                   Yes
                 </button>
                 <button
                   onClick={() => handleResponse(false)}
-                  className="px-10 py-3 rounded-full border-2 font-medium text-lg hover:bg-white/50 transition-all"
-                  style={{ borderColor: themeColors.primary, color: themeColors.primary }}
+                  className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
+                  style={{
+                    borderColor: themeColors.primary,
+                    color: themeColors.primary,
+                    fontSize: `clamp(14px, 2vw + 8px, 20px)`,
+                    padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
+                  }}
                 >
                   No
                 </button>
@@ -519,12 +541,12 @@ export default function ValentinePage() {
                   {response ? (
                     <>
                       <span className="text-4xl mb-2 block">💕</span>
-                      <p className="text-2xl text-gray-800" style={{ fontFamily }}>Yay! That&apos;s amazing!</p>
+                      <p className="text-gray-800" style={{ fontFamily, fontSize: `clamp(18px, 3vw + 8px, 28px)` }}>Yay! That&apos;s amazing!</p>
                     </>
                   ) : (
                     <>
                       <span className="text-4xl mb-2 block">💔</span>
-                      <p className="text-2xl text-gray-800" style={{ fontFamily }}>Maybe next time...</p>
+                      <p className="text-gray-800" style={{ fontFamily, fontSize: `clamp(18px, 3vw + 8px, 28px)` }}>Maybe next time...</p>
                     </>
                   )}
                 </div>

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import sharp from 'sharp'
+
+const MAX_WIDTH = 1200
+const QUALITY = 75
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,14 +15,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File is required' }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const extension = file.name.split('.').pop() || 'jpg'
-    const fileName = `${valentineId || 'temp'}/${Date.now()}.${extension}`
+    const rawBuffer = Buffer.from(await file.arrayBuffer())
+
+    // Compress and resize with sharp
+    const compressed = await sharp(rawBuffer)
+      .rotate() // auto-rotate based on EXIF
+      .resize(MAX_WIDTH, MAX_WIDTH, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: QUALITY })
+      .toBuffer()
+
+    const fileName = `${valentineId || 'temp'}/${Date.now()}.webp`
 
     const { error: uploadError } = await supabase.storage
       .from('valentine-photos')
-      .upload(fileName, buffer, {
-        contentType: file.type,
+      .upload(fileName, compressed, {
+        contentType: 'image/webp',
         upsert: false,
       })
 

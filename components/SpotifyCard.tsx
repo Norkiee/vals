@@ -172,7 +172,7 @@ export default function SpotifyCard({
       ) : (
         <div>
           <iframe
-            src={embedUrl}
+            src={embedUrl!}
             width="100%"
             height="152"
             frameBorder="0"

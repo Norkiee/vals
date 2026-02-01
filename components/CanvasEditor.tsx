@@ -35,6 +35,7 @@ interface CanvasEditorProps {
   viewMode?: 'mobile' | 'desktop'
   recipientName?: string
   fontSize?: number
+  font?: string
   templateMode?: boolean
   placeholderCount?: number
 }
@@ -138,6 +139,7 @@ export default function CanvasEditor({
   viewMode = 'mobile',
   recipientName = '',
   fontSize = 16,
+  font = 'Loveheart',
   templateMode = false,
   placeholderCount = 3,
 }: CanvasEditorProps) {
@@ -650,8 +652,8 @@ export default function CanvasEditor({
           return (
             <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
               <p
-                className="font-loveheart leading-relaxed text-center"
-                style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px` }}
+                className="leading-relaxed text-center"
+                style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px`, fontFamily: `'${font}', cursive` }}
               >
                 {message || 'Your message will appear here...'}
               </p>

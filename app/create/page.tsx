@@ -394,6 +394,7 @@ export default function CreatePage() {
                     viewMode="mobile"
                     recipientName={recipientName}
                     fontSize={fontSize}
+                    font={font}
                   />
                 </div>
               </div>
@@ -503,6 +504,7 @@ export default function CreatePage() {
             viewMode={viewMode}
             recipientName={recipientName}
             fontSize={fontSize}
+            font={font}
           />
         </div>
       </div>

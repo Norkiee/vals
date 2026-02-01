@@ -352,13 +352,11 @@ export default function CanvasEditor({
   const buttonsContentRef = useRef<HTMLDivElement>(null)
   const spotifyContentRef = useRef<HTMLDivElement>(null)
 
-  // Auto-fit bounding boxes to content for text, buttons, and spotify
+  // Auto-fit bounding boxes for buttons and spotify (not text — user resizes text manually)
   const MIN_ELEMENT_HEIGHT = 30
 
   useLayoutEffect(() => {
-    // Measure each element type from its ref and fit the bounding box
     const refMap: { type: string; ref: React.RefObject<HTMLElement | null>; padding: number }[] = [
-      { type: 'text', ref: textContentRef, padding: 16 },
       { type: 'buttons', ref: buttonsContentRef, padding: 8 },
       { type: 'spotify', ref: spotifyContentRef, padding: 0 },
     ]
@@ -380,39 +378,8 @@ export default function CanvasEditor({
         updates[el.id] != null ? { ...el, height: updates[el.id] } : el
       ))
     }
-
-    // Fit the OTHER mode's text element via off-screen measurement
-    if (message) {
-      const otherSetElements = viewMode === 'mobile' ? setDesktopElements : setMobileElements
-      const otherElements = viewMode === 'mobile' ? desktopElements : mobileElements
-      const otherTextEl = otherElements.find(el => el.type === 'text')
-      if (otherTextEl) {
-        const textScale = otherTextEl.width / 200
-        const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
-        const padding = 16
-        const measurer = document.createElement('div')
-        measurer.style.position = 'absolute'
-        measurer.style.visibility = 'hidden'
-        measurer.style.width = `${otherTextEl.width - padding}px`
-        measurer.style.fontSize = `${scaledFontSize}px`
-        measurer.style.fontFamily = `'${font}', cursive`
-        measurer.style.lineHeight = '1.625'
-        measurer.style.textAlign = 'center'
-        measurer.style.whiteSpace = 'pre-wrap'
-        measurer.style.wordBreak = 'break-word'
-        measurer.textContent = message
-        document.body.appendChild(measurer)
-        const needed = Math.max(MIN_ELEMENT_HEIGHT, measurer.scrollHeight + padding)
-        document.body.removeChild(measurer)
-        if (Math.abs(needed - otherTextEl.height) > 1) {
-          otherSetElements(prev => prev.map(el =>
-            el.id === otherTextEl.id ? { ...el, height: needed } : el
-          ))
-        }
-      }
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, fontSize, font, viewMode, spotifyLink, spotifyMeta])
+  }, [fontSize, font, viewMode, spotifyLink, spotifyMeta])
 
   // Notify parent of state changes - send both states
   useEffect(() => {

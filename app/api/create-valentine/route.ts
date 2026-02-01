@@ -1,8 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { generateSubdomain, generateAdminToken } from '@/lib/utils'
-import { fetchSpotifyMetadata } from '@/lib/spotify'
 import { v4 as uuidv4 } from 'uuid'
+
+/**
+ * Parses Spotify oEmbed title format: "Song Name by Artist on Spotify"
+ */
+function parseSpotifyTitle(fullTitle: string): { title: string; artist: string } {
+  let cleaned = fullTitle.replace(/ on Spotify$/i, '')
+  const byIndex = cleaned.lastIndexOf(' by ')
+  if (byIndex > 0) {
+    return {
+      title: cleaned.substring(0, byIndex).trim(),
+      artist: cleaned.substring(byIndex + 4).trim(),
+    }
+  }
+  return {
+    title: cleaned || 'Unknown Title',
+    artist: 'Unknown Artist',
+  }
+}
+
+/**
+ * Fetches Spotify metadata directly from oEmbed API (server-side)
+ */
+async function fetchSpotifyMetadataServer(spotifyUrl: string): Promise<{
+  title: string
+  artist: string
+  thumbnail: string | null
+} | null> {
+  try {
+    const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`
+    const response = await fetch(oembedUrl)
+
+    if (!response.ok) {
+      console.error('Spotify oEmbed failed:', response.status)
+      return null
+    }
+
+    const data = await response.json()
+    const { title, artist } = parseSpotifyTitle(data.title || '')
+
+    return {
+      title,
+      artist,
+      thumbnail: data.thumbnail_url || null,
+    }
+  } catch (error) {
+    console.error('Error fetching Spotify metadata:', error)
+    return null
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +103,7 @@ export async function POST(request: NextRequest) {
     let spotifyThumbnail: string | null = null
 
     if (spotifyLink?.trim()) {
-      const metadata = await fetchSpotifyMetadata(spotifyLink.trim())
+      const metadata = await fetchSpotifyMetadataServer(spotifyLink.trim())
       if (metadata) {
         spotifyTitle = metadata.title
         spotifyArtist = metadata.artist

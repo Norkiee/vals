@@ -1,8 +1,8 @@
 'use client'
 
 /* eslint-disable @next/next/no-img-element */
-import { useState } from 'react'
-import { getSpotifyEmbedUrl } from '@/lib/spotify'
+import { useState, useEffect } from 'react'
+import { getSpotifyEmbedUrl, fetchSpotifyMetadata } from '@/lib/spotify'
 
 interface SpotifyCardProps {
   spotifyLink: string
@@ -15,14 +15,40 @@ interface SpotifyCardProps {
 
 export default function SpotifyCard({
   spotifyLink,
-  title = 'Music title',
-  artist = 'Artist name',
-  thumbnail,
+  title: initialTitle,
+  artist: initialArtist,
+  thumbnail: initialThumbnail,
   themeColor,
   compact = false,
 }: SpotifyCardProps) {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [title, setTitle] = useState(initialTitle || 'Music title')
+  const [artist, setArtist] = useState(initialArtist || 'Artist name')
+  const [thumbnail, setThumbnail] = useState<string | null | undefined>(initialThumbnail)
   const embedUrl = getSpotifyEmbedUrl(spotifyLink)
+
+  // Fetch metadata client-side if not provided
+  useEffect(() => {
+    async function loadMetadata() {
+      // Fetch if we don't have title/artist from props
+      const needsFetch = !initialTitle || !initialArtist || initialTitle === 'Music title'
+      if (needsFetch && spotifyLink) {
+        try {
+          const metadata = await fetchSpotifyMetadata(spotifyLink)
+          if (metadata) {
+            setTitle(metadata.title)
+            setArtist(metadata.artist)
+            if (metadata.thumbnail) {
+              setThumbnail(metadata.thumbnail)
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch Spotify metadata:', error)
+        }
+      }
+    }
+    loadMetadata()
+  }, [spotifyLink, initialTitle, initialArtist])
 
   const handleTogglePlay = () => {
     if (embedUrl) {

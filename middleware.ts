@@ -14,6 +14,11 @@ export async function middleware(request: NextRequest) {
   // Check if we're on localhost for development
   const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1')
 
+  // Skip subdomain routing for API routes - they should always be accessible
+  if (url.pathname.startsWith('/api/')) {
+    return NextResponse.next({ request })
+  }
+
   // Extract subdomain
   let subdomain: string | null = null
 

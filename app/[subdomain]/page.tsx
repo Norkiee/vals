@@ -182,7 +182,7 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className={`absolute ${bobClass}`}
+        className="absolute"
         style={{
           left: element.x,
           top: element.y,
@@ -192,20 +192,22 @@ export default function ValentinePage() {
           zIndex: element.zIndex,
         }}
       >
-        <div
-          className={`w-full h-full ${
-            isPolaroid
-              ? 'bg-white p-[6%] pb-[14%] shadow-lg'
-              : 'hearts-border p-[6%] bg-white'
-          }`}
-          style={{ ['--theme-primary' as string]: themeColors.primary }}
-        >
-          <div className="w-full h-full relative overflow-hidden">
-            <img
-              src={photo.photo_url}
-              alt="Photo"
-              className="w-full h-full object-cover"
-            />
+        <div className={`w-full h-full ${bobClass}`}>
+          <div
+            className={`w-full h-full ${
+              isPolaroid
+                ? 'bg-white p-[6%] pb-[14%] shadow-lg'
+                : 'hearts-border p-[6%] bg-white'
+            }`}
+            style={{ ['--theme-primary' as string]: themeColors.primary }}
+          >
+            <div className="w-full h-full relative overflow-hidden">
+              <img
+                src={photo.photo_url}
+                alt="Photo"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -218,7 +220,7 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className="absolute flex items-center justify-center p-1 animate-sway"
+        className="absolute flex items-center justify-center p-1"
         style={{
           left: element.x,
           top: element.y,
@@ -227,12 +229,14 @@ export default function ValentinePage() {
           zIndex: element.zIndex,
         }}
       >
-        <p
-          className="font-loveheart text-gray-800 leading-relaxed text-center"
-          style={{ fontSize }}
-        >
-          {valentine.message}
-        </p>
+        <div className="animate-sway">
+          <p
+            className="font-loveheart text-gray-800 leading-relaxed text-center"
+            style={{ fontSize }}
+          >
+            {valentine.message}
+          </p>
+        </div>
       </div>
     )
   }
@@ -295,7 +299,7 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className="absolute animate-bob-2"
+        className="absolute"
         style={{
           left: element.x,
           top: element.y,
@@ -304,6 +308,7 @@ export default function ValentinePage() {
           zIndex: element.zIndex,
         }}
       >
+        <div className="w-full h-full animate-bob-2">
         <div className="w-full h-full bg-white rounded-md shadow-sm flex items-center gap-1.5 p-1">
           {/* Thumbnail */}
           <div className="h-[80%] aspect-square rounded flex-shrink-0 overflow-hidden">
@@ -338,6 +343,7 @@ export default function ValentinePage() {
           >
             Play
           </a>
+        </div>
         </div>
       </div>
     )
@@ -402,22 +408,29 @@ export default function ValentinePage() {
               {valentine.photos.map((photo, i) => (
                 <div
                   key={i}
-                  className={`relative ${BOB_CLASSES[i % BOB_CLASSES.length]} ${
-                    valentine.photo_style === 'polaroid'
-                      ? 'bg-white p-2 pb-6 shadow-lg'
-                      : 'hearts-border p-2 bg-white'
-                  }`}
                   style={{
                     transform: `rotate(${i % 2 === 0 ? -2 : 2}deg)`,
-                    ['--theme-primary' as string]: themeColors.primary,
                   }}
                 >
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 overflow-hidden">
-                    <img
-                      src={photo.photo_url}
-                      alt={`Photo ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className={BOB_CLASSES[i % BOB_CLASSES.length]}>
+                    <div
+                      className={`relative ${
+                        valentine.photo_style === 'polaroid'
+                          ? 'bg-white p-2 pb-6 shadow-lg'
+                          : 'hearts-border p-2 bg-white'
+                      }`}
+                      style={{
+                        ['--theme-primary' as string]: themeColors.primary,
+                      }}
+                    >
+                      <div className="w-32 h-32 sm:w-36 sm:h-36 overflow-hidden">
+                        <img
+                          src={photo.photo_url}
+                          alt={`Photo ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}

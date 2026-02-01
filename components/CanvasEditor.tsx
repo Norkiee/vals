@@ -705,10 +705,10 @@ export default function CanvasEditor({
           const textScale = element.width / 200
           const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
           return (
-            <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
               <p
                 ref={textContentRef}
-                className="leading-relaxed text-center"
+                className="w-full leading-relaxed text-center break-words"
                 style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px`, fontFamily: `'${font}', cursive` }}
               >
                 {message || 'Your message will appear here...'}

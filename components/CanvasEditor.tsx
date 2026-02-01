@@ -656,14 +656,15 @@ export default function CanvasEditor({
         case 'spotify':
           if (!spotifyLink) return null
           return (
-            <div className="w-full h-full overflow-hidden relative">
+            <div className="w-full h-full overflow-hidden">
               <SpotifyCard
                 spotifyLink={spotifyLink}
+                title={spotifyMeta?.title}
+                artist={spotifyMeta?.artist}
+                thumbnail={spotifyMeta?.thumbnail}
                 themeColor={themeColors.primary}
                 compact={element.height < 120}
               />
-              {/* Transparent overlay to capture mouse events for dragging */}
-              <div className="absolute inset-0" />
             </div>
           )
 

@@ -334,6 +334,9 @@ export default function ValentinePage() {
       >
         <SpotifyCard
           spotifyLink={valentine.spotify_link}
+          title={valentine.spotify_title || undefined}
+          artist={valentine.spotify_artist || undefined}
+          thumbnail={valentine.spotify_thumbnail}
           themeColor={themeColors.primary}
           compact={element.height < 120}
         />
@@ -454,6 +457,9 @@ export default function ValentinePage() {
             <div className="mb-6 px-4">
               <SpotifyCard
                 spotifyLink={valentine.spotify_link}
+                title={valentine.spotify_title || undefined}
+                artist={valentine.spotify_artist || undefined}
+                thumbnail={valentine.spotify_thumbnail}
                 themeColor={themeColors.primary}
                 compact
               />

@@ -226,6 +226,7 @@ export default function ValentinePage() {
           top: element.y,
           width: element.width,
           height: element.height,
+          transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
       >
@@ -251,6 +252,7 @@ export default function ValentinePage() {
           top: element.y,
           width: element.width,
           height: element.height,
+          transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
       >
@@ -305,6 +307,7 @@ export default function ValentinePage() {
           top: element.y,
           width: element.width,
           height: element.height,
+          transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
       >

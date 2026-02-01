@@ -655,16 +655,26 @@ export default function CanvasEditor({
 
         case 'spotify':
           if (!spotifyLink) return null
+          const EMBED_BASE_WIDTH = 300
+          const EMBED_BASE_HEIGHT = 80
+          const scaleX = element.width / EMBED_BASE_WIDTH
+          const scaleY = element.height / EMBED_BASE_HEIGHT
           return (
-            <div className="w-full h-full">
-              <SpotifyCard
-                spotifyLink={spotifyLink}
-                title={spotifyMeta?.title}
-                artist={spotifyMeta?.artist}
-                thumbnail={spotifyMeta?.thumbnail}
-                themeColor={themeColors.primary}
-                compact={true}
-              />
+            <div className="w-full h-full overflow-hidden">
+              <div
+                style={{
+                  width: EMBED_BASE_WIDTH,
+                  height: EMBED_BASE_HEIGHT,
+                  transform: `scale(${scaleX}, ${scaleY})`,
+                  transformOrigin: 'top left',
+                }}
+              >
+                <SpotifyCard
+                  spotifyLink={spotifyLink}
+                  themeColor={themeColors.primary}
+                  compact={true}
+                />
+              </div>
             </div>
           )
 

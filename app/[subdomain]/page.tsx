@@ -71,7 +71,7 @@ export default function ValentinePage() {
       const bh = mobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
       const sx = window.innerWidth / bw
       const sy = window.innerHeight / bh
-      setScale(mobile ? sx : Math.min(sx, sy))
+      setScale(Math.min(sx, sy))
     }
     update()
     window.addEventListener('resize', update)
@@ -476,17 +476,17 @@ export default function ValentinePage() {
 
   return (
     <main
-      className="w-screen h-screen overflow-hidden"
+      className="w-screen h-screen overflow-hidden flex items-center justify-center"
       style={{ backgroundColor: themeColors.bgColor }}
     >
-      {/* Scaled canvas — fills screen width on mobile, fits viewport on desktop */}
+      {/* Scaled canvas — centered, fits entirely within viewport */}
       <div
         className="relative"
         style={{
           width: baseW,
           height: baseH,
           transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          transformOrigin: 'center center',
         }}
       >
         {elements.map(renderElement)}

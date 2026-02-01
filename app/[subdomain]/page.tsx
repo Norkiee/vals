@@ -168,6 +168,8 @@ export default function ValentinePage() {
   const baseW = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH
   const baseH = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
 
+  const BOB_CLASSES = ['animate-bob-1', 'animate-bob-2', 'animate-bob-3', 'animate-bob-4']
+
   const renderPhoto = (element: CanvasElement) => {
     const photoIndex = element.photoIndex ?? 0
     if (!valentine.photos || photoIndex >= valentine.photos.length) return null
@@ -175,11 +177,12 @@ export default function ValentinePage() {
     if (!photo || !photo.photo_url) return null
 
     const isPolaroid = valentine.photo_style === 'polaroid'
+    const bobClass = BOB_CLASSES[photoIndex % BOB_CLASSES.length]
 
     return (
       <div
         key={element.id}
-        className="absolute"
+        className={`absolute ${bobClass}`}
         style={{
           left: element.x,
           top: element.y,
@@ -215,7 +218,7 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className="absolute flex items-center justify-center p-1"
+        className="absolute flex items-center justify-center p-1 animate-sway"
         style={{
           left: element.x,
           top: element.y,
@@ -292,7 +295,7 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className="absolute"
+        className="absolute animate-bob-2"
         style={{
           left: element.x,
           top: element.y,
@@ -358,19 +361,48 @@ export default function ValentinePage() {
 
   // Fallback layout when no canvas layout exists
   if (!mounted || !canvasLayout || !Array.isArray(elements) || elements.length === 0) {
+    const fallbackHearts = [
+      { left: '5%',  bottom: '3%',  size: 16, duration: 9,  delay: 0 },
+      { left: '20%', bottom: '8%',  size: 11, duration: 11, delay: 1.2 },
+      { left: '45%', bottom: '1%',  size: 18, duration: 8,  delay: 2.8 },
+      { left: '70%', bottom: '6%',  size: 12, duration: 10, delay: 0.5 },
+      { left: '90%', bottom: '4%',  size: 14, duration: 12, delay: 3.2 },
+      { left: '35%', bottom: '10%', size: 10, duration: 7.5, delay: 4.1 },
+    ]
+
     return (
       <main
-        className="min-h-screen"
+        className="min-h-screen relative overflow-hidden"
         style={{ backgroundColor: themeColors.bgColor }}
       >
-        <div className="max-w-md mx-auto px-6 py-10">
+        {/* Floating background hearts */}
+        {fallbackHearts.map((heart, i) => (
+          <span
+            key={`heart-${i}`}
+            className="absolute animate-float-up"
+            style={{
+              left: heart.left,
+              bottom: heart.bottom,
+              fontSize: heart.size,
+              animationDuration: `${heart.duration}s`,
+              animationDelay: `${heart.delay}s`,
+              color: themeColors.primary,
+              opacity: 0.18,
+              zIndex: 0,
+            }}
+          >
+            ♥
+          </span>
+        ))}
+
+        <div className="max-w-md mx-auto px-6 py-10 relative z-10">
           {/* Photos */}
           {valentine.photos.length > 0 && (
             <div className="mb-8 flex justify-center gap-4 flex-wrap">
               {valentine.photos.map((photo, i) => (
                 <div
                   key={i}
-                  className={`relative ${
+                  className={`relative ${BOB_CLASSES[i % BOB_CLASSES.length]} ${
                     valentine.photo_style === 'polaroid'
                       ? 'bg-white p-2 pb-6 shadow-lg'
                       : 'hearts-border p-2 bg-white'
@@ -394,7 +426,7 @@ export default function ValentinePage() {
 
           {/* Message */}
           {valentine.message && (
-            <div className="text-center mb-8 px-2">
+            <div className="text-center mb-8 px-2 animate-sway">
               <p
                 className="font-loveheart leading-relaxed text-gray-800 text-xl sm:text-2xl"
               >
@@ -443,7 +475,7 @@ export default function ValentinePage() {
 
           {/* Spotify */}
           {valentine.spotify_link && (
-            <div className="mb-8">
+            <div className="mb-8 animate-bob-2">
               <SpotifyCard
                 spotifyLink={valentine.spotify_link}
                 title={valentine.spotify_title || undefined}
@@ -459,6 +491,18 @@ export default function ValentinePage() {
       </main>
     )
   }
+
+  // Floating hearts configuration — positions spread across the canvas
+  const floatingHearts = [
+    { left: '8%',  bottom: '5%',  size: 14, duration: 8,  delay: 0 },
+    { left: '25%', bottom: '10%', size: 10, duration: 10, delay: 1.5 },
+    { left: '50%', bottom: '2%',  size: 16, duration: 9,  delay: 3 },
+    { left: '72%', bottom: '8%',  size: 11, duration: 11, delay: 0.8 },
+    { left: '88%', bottom: '4%',  size: 13, duration: 7,  delay: 2.5 },
+    { left: '15%', bottom: '15%', size: 9,  duration: 12, delay: 4 },
+    { left: '60%', bottom: '12%', size: 12, duration: 8.5, delay: 1 },
+    { left: '40%', bottom: '7%',  size: 15, duration: 10.5, delay: 3.5 },
+  ]
 
   // Render with canvas layout — scale transform to fit screen
   // Elements are placed at their original pixel positions, then the
@@ -481,6 +525,26 @@ export default function ValentinePage() {
           transformOrigin: 'center center',
         }}
       >
+        {/* Floating background hearts */}
+        {floatingHearts.map((heart, i) => (
+          <span
+            key={`heart-${i}`}
+            className="absolute animate-float-up"
+            style={{
+              left: heart.left,
+              bottom: heart.bottom,
+              fontSize: heart.size,
+              animationDuration: `${heart.duration}s`,
+              animationDelay: `${heart.delay}s`,
+              color: themeColors.primary,
+              opacity: 0.18,
+              zIndex: 0,
+            }}
+          >
+            ♥
+          </span>
+        ))}
+
         {elements.map(renderElement)}
 
       </div>

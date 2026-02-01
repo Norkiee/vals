@@ -218,6 +218,10 @@ export default function ValentinePage() {
   const renderText = (element: CanvasElement) => {
     if (!valentine.message) return null
 
+    // Scale font size based on element width, matching CanvasEditor logic
+    const textScale = element.width / 200
+    const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
+
     return (
       <div
         key={element.id}
@@ -233,8 +237,8 @@ export default function ValentinePage() {
       >
         <div className="animate-sway">
           <p
-            className="text-gray-800 leading-relaxed text-center"
-            style={{ fontSize, fontFamily }}
+            className="text-gray-800 leading-relaxed text-center break-words"
+            style={{ fontSize: scaledFontSize, fontFamily }}
           >
             {valentine.message}
           </p>
@@ -244,6 +248,13 @@ export default function ValentinePage() {
   }
 
   const renderButtons = (element: CanvasElement) => {
+    // Scale button size based on element width, matching CanvasEditor logic
+    const buttonScale = element.width / 160
+    const btnFontSize = Math.max(10, Math.min(24, 12 * buttonScale))
+    const btnPaddingX = Math.max(12, Math.min(40, 20 * buttonScale))
+    const btnPaddingY = Math.max(4, Math.min(16, 6 * buttonScale))
+    const btnGap = Math.max(8, Math.min(24, 12 * buttonScale))
+
     return (
       <div
         key={element.id}
@@ -258,20 +269,26 @@ export default function ValentinePage() {
         }}
       >
         {!responded ? (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
             <button
               onClick={() => handleResponse(true)}
-              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all px-6 py-2 text-sm"
-              style={{ backgroundColor: themeColors.primary }}
+              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`,
+              }}
             >
               Yes
             </button>
             <button
               onClick={() => handleResponse(false)}
-              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all px-6 py-2 text-sm"
+              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
               style={{
                 borderColor: themeColors.primary,
                 color: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`,
               }}
             >
               No
@@ -282,12 +299,12 @@ export default function ValentinePage() {
             {response ? (
               <>
                 <span className="text-xl mb-1 block">💕</span>
-                <p className="text-sm text-gray-800" style={{ fontFamily }}>Yay!</p>
+                <p style={{ fontFamily, fontSize: `${btnFontSize}px` }} className="text-gray-800">Yay!</p>
               </>
             ) : (
               <>
                 <span className="text-xl mb-1 block">💔</span>
-                <p className="text-sm text-gray-800" style={{ fontFamily }}>Maybe next time</p>
+                <p style={{ fontFamily, fontSize: `${btnFontSize}px` }} className="text-gray-800">Maybe next time</p>
               </>
             )}
           </div>
@@ -298,6 +315,13 @@ export default function ValentinePage() {
 
   const renderSpotify = (element: CanvasElement) => {
     if (!valentine.spotify_link) return null
+
+    // Scale spotify card text based on element width (base width: 140)
+    const spotifyScale = element.width / 140
+    const titleSize = Math.max(7, Math.min(16, 9 * spotifyScale))
+    const subtitleSize = Math.max(6, Math.min(14, 8 * spotifyScale))
+    const btnSize = Math.max(6, Math.min(14, 8 * spotifyScale))
+    const iconSize = Math.max(6, Math.min(14, 8 * spotifyScale))
 
     return (
       <div
@@ -328,13 +352,13 @@ export default function ValentinePage() {
           </div>
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-medium truncate leading-tight">{valentine.spotify_title || 'Song'}</p>
-            <p className="text-[8px] text-gray-500 truncate leading-tight">{valentine.spotify_artist || 'Artist'}</p>
+            <p className="font-medium truncate leading-tight" style={{ fontSize: `${titleSize}px` }}>{valentine.spotify_title || 'Song'}</p>
+            <p className="text-gray-500 truncate leading-tight" style={{ fontSize: `${subtitleSize}px` }}>{valentine.spotify_artist || 'Artist'}</p>
             <div className="flex items-center gap-0.5">
-              <svg className="w-2 h-2" viewBox="0 0 24 24" fill="#1DB954">
+              <svg style={{ width: iconSize, height: iconSize }} viewBox="0 0 24 24" fill="#1DB954">
                 <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
               </svg>
-              <span className="text-[8px] text-gray-400">Spotify</span>
+              <span className="text-gray-400" style={{ fontSize: `${subtitleSize}px` }}>Spotify</span>
             </div>
           </div>
           {/* Play button */}
@@ -342,8 +366,12 @@ export default function ValentinePage() {
             href={getSpotifyOpenUrl(valentine.spotify_link) || valentine.spotify_link}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-1.5 py-0.5 rounded-full text-white text-[8px] font-medium flex-shrink-0"
-            style={{ backgroundColor: themeColors.primary }}
+            className="rounded-full text-white font-medium flex-shrink-0"
+            style={{
+              backgroundColor: themeColors.primary,
+              fontSize: `${btnSize}px`,
+              padding: `${Math.max(2, 2 * spotifyScale)}px ${Math.max(4, 6 * spotifyScale)}px`,
+            }}
           >
             Play
           </a>

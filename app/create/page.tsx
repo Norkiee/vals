@@ -47,9 +47,7 @@ export default function CreatePage() {
   // Success modal
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [createdSubdomain, setCreatedSubdomain] = useState('')
-  const [createdAdminToken, setCreatedAdminToken] = useState('')
   const [copied, setCopied] = useState(false)
-  const [copiedAdmin, setCopiedAdmin] = useState(false)
 
   const subdomain = generateSubdomain(recipientName)
 
@@ -142,8 +140,8 @@ export default function CreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!recipientName.trim() || photos.length === 0) {
-      alert('Please add a recipient name and at least one photo')
+    if (!recipientName.trim() || photos.length === 0 || !creatorEmail.trim()) {
+      alert('Please add a recipient name, at least one photo, and your email')
       return
     }
 
@@ -192,7 +190,6 @@ export default function CreatePage() {
 
       const data = await response.json()
       setCreatedSubdomain(data.subdomain)
-      setCreatedAdminToken(data.adminToken)
       setShowSuccessModal(true)
     } catch (error) {
       console.error('Error creating valentine:', error)
@@ -202,11 +199,10 @@ export default function CreatePage() {
     }
   }
 
-  const isValid = recipientName.trim() && photos.length > 0
+  const isValid = recipientName.trim() && photos.length > 0 && creatorEmail.trim()
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'askcuter.xyz'
   const valentineUrl = `https://${createdSubdomain}.${rootDomain}`
-  const adminUrl = `https://${rootDomain}/admin/${createdAdminToken}`
 
   const handleCopyLink = async () => {
     try {
@@ -223,23 +219,6 @@ export default function CreatePage() {
       document.body.removeChild(textArea)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  const handleCopyAdminLink = async () => {
-    try {
-      await navigator.clipboard.writeText(adminUrl)
-      setCopiedAdmin(true)
-      setTimeout(() => setCopiedAdmin(false), 2000)
-    } catch {
-      const textArea = document.createElement('textarea')
-      textArea.value = adminUrl
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopiedAdmin(true)
-      setTimeout(() => setCopiedAdmin(false), 2000)
     }
   }
 
@@ -345,9 +324,10 @@ export default function CreatePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Your email (optional)</label>
+              <label className="block text-sm font-medium text-gray-700">Your email</label>
               <input
                 type="email"
+                required
                 value={creatorEmail}
                 onChange={(e) => setCreatorEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -582,33 +562,7 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* Admin Link */}
-            <div className="text-left mb-6">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Track responses</p>
-              <div className="flex gap-2">
-                <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 flex items-center min-w-0">
-                  <p className="text-gray-600 font-medium text-sm truncate">{adminUrl}</p>
-                  <button
-                    onClick={handleCopyAdminLink}
-                    className="ml-auto p-1 hover:bg-gray-200 rounded-md transition-colors"
-                    title="Copy admin link"
-                  >
-                    {copiedAdmin ? (
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">Save this link to check if they responded</p>
-            </div>
-
-            <div className="border-t border-gray-100 pt-4">
+            <div className="border-t border-gray-100 pt-4 mt-6">
               <button
                 onClick={() => router.push(`/${createdSubdomain}`)}
                 className="text-sm text-gray-700 hover:underline"

@@ -350,18 +350,20 @@ export default function CanvasEditor({
   // Ref for measuring actual rendered text content height
   const textContentRef = useRef<HTMLParagraphElement>(null)
 
-  // Auto-grow text element height when content overflows (measured from actual DOM)
-  // Grows the active viewMode from the real paragraph, and the other mode via off-screen measurement
+  // Auto-fit text element bounding box to content (grow AND shrink)
+  // Active mode uses real DOM measurement; other mode uses off-screen measurement
+  const MIN_TEXT_HEIGHT = 30
+
   useLayoutEffect(() => {
     if (!message) return
 
-    // Grow the currently rendered mode using the actual DOM element
+    // Fit the currently rendered mode using the actual DOM element
     if (textContentRef.current) {
       const textEl = elements.find(el => el.type === 'text')
       if (textEl) {
         const padding = 16
-        const needed = textContentRef.current.scrollHeight + padding
-        if (needed > textEl.height) {
+        const needed = Math.max(MIN_TEXT_HEIGHT, textContentRef.current.scrollHeight + padding)
+        if (Math.abs(needed - textEl.height) > 1) {
           setElements(prev => prev.map(el =>
             el.id === textEl.id ? { ...el, height: needed } : el
           ))
@@ -369,7 +371,7 @@ export default function CanvasEditor({
       }
     }
 
-    // Grow the OTHER mode via off-screen measurement so it stays in sync
+    // Fit the OTHER mode via off-screen measurement so it stays in sync
     const otherSetElements = viewMode === 'mobile' ? setDesktopElements : setMobileElements
     const otherElements = viewMode === 'mobile' ? desktopElements : mobileElements
     const otherTextEl = otherElements.find(el => el.type === 'text')
@@ -389,9 +391,9 @@ export default function CanvasEditor({
       measurer.style.wordBreak = 'break-word'
       measurer.textContent = message
       document.body.appendChild(measurer)
-      const needed = measurer.scrollHeight + padding
+      const needed = Math.max(MIN_TEXT_HEIGHT, measurer.scrollHeight + padding)
       document.body.removeChild(measurer)
-      if (needed > otherTextEl.height) {
+      if (Math.abs(needed - otherTextEl.height) > 1) {
         otherSetElements(prev => prev.map(el =>
           el.id === otherTextEl.id ? { ...el, height: needed } : el
         ))

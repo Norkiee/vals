@@ -41,8 +41,11 @@ interface ValentineData {
   photos: { photo_url: string; display_order: number }[]
 }
 
+// Base canvas dimensions (what the editor uses)
 const MOBILE_WIDTH = 220
 const MOBILE_HEIGHT = 476
+const DESKTOP_WIDTH = 800
+const DESKTOP_HEIGHT = 500
 
 export default function ValentinePage() {
   const params = useParams()
@@ -53,38 +56,14 @@ export default function ValentinePage() {
   const [responded, setResponded] = useState(false)
   const [response, setResponse] = useState<boolean | null>(null)
   const [isMobile, setIsMobile] = useState(true)
-  const [scale, setScale] = useState(1.5)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768
-      setIsMobile(mobile)
-      return mobile
-    }
-    const calculateScale = () => {
-      if (typeof window === 'undefined') return
-      const mobile = window.innerWidth < 768
-      const screenWidth = window.innerWidth
-      const screenHeight = window.innerHeight
-      const baseWidth = mobile ? MOBILE_WIDTH : 800
-      const baseHeight = mobile ? MOBILE_HEIGHT : 500
-      const scaleX = (screenWidth - 64) / baseWidth
-      const scaleY = (screenHeight - 100) / baseHeight
-      // Allow desktop to scale up more to fill screen
-      setScale(Math.min(scaleX, scaleY, mobile ? 2.5 : 2))
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
-    calculateScale()
-    const handleResize = () => {
-      checkMobile()
-      calculateScale()
-    }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   useEffect(() => {
@@ -173,12 +152,19 @@ export default function ValentinePage() {
     : (canvasLayout?.desktop || canvasLayout?.mobile || [])
   const fontSize = valentine.font_size || 16
 
-  // Canvas dimensions based on device
-  const DESKTOP_WIDTH = 800
-  const DESKTOP_HEIGHT = 500
-  const canvasWidth = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH
-  const canvasHeight = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
+  // Base dimensions the editor used
+  const baseW = isMobile ? MOBILE_WIDTH : DESKTOP_WIDTH
+  const baseH = isMobile ? MOBILE_HEIGHT : DESKTOP_HEIGHT
 
+  // Convert pixel position to percentage of base canvas
+  const pct = (px: number, base: number) => (px / base) * 100
+
+  // Scale font sizes relative to viewport width instead of the tiny editor canvas
+  const fontScale = (editorFontSize: number, elementWidthPct: number) => {
+    // elementWidthPct is the element's width as % of viewport
+    // Scale font relative to that so it fills the element properly
+    return `clamp(12px, ${editorFontSize * (elementWidthPct / 100) * 4}vw, 64px)`
+  }
 
   const renderPhoto = (element: CanvasElement) => {
     const photoIndex = element.photoIndex ?? 0
@@ -193,10 +179,10 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute"
         style={{
-          left: element.x,
-          top: element.y,
-          width: element.width,
-          height: element.height,
+          left: `${pct(element.x, baseW)}%`,
+          top: `${pct(element.y, baseH)}%`,
+          width: `${pct(element.width, baseW)}%`,
+          height: `${pct(element.height, baseH)}%`,
           transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
         }}
@@ -204,14 +190,12 @@ export default function ValentinePage() {
         <div
           className={`w-full h-full ${
             isPolaroid
-              ? 'bg-white p-2 pb-6 shadow-lg'
-              : 'hearts-border p-2 bg-white'
+              ? 'bg-white p-[6%] pb-[14%] shadow-lg'
+              : 'hearts-border p-[6%] bg-white'
           }`}
-          style={{
-            ['--theme-primary' as string]: themeColors.primary,
-          }}
+          style={{ ['--theme-primary' as string]: themeColors.primary }}
         >
-          <div className="w-full h-full relative">
+          <div className="w-full h-full relative overflow-hidden">
             <img
               src={photo.photo_url}
               alt="Photo"
@@ -226,25 +210,23 @@ export default function ValentinePage() {
   const renderText = (element: CanvasElement) => {
     if (!valentine.message) return null
 
-    // Scale font size based on element width (same as CanvasEditor)
-    const textScale = element.width / 200
-    const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
+    const widthPct = pct(element.width, baseW)
 
     return (
       <div
         key={element.id}
-        className="absolute flex items-center justify-center p-2"
+        className="absolute flex items-center justify-center p-[2%]"
         style={{
-          left: element.x,
-          top: element.y,
-          width: element.width,
-          height: element.height,
+          left: `${pct(element.x, baseW)}%`,
+          top: `${pct(element.y, baseH)}%`,
+          width: `${widthPct}%`,
+          height: `${pct(element.height, baseH)}%`,
           zIndex: element.zIndex,
         }}
       >
         <p
           className="font-loveheart text-gray-800 leading-relaxed text-center"
-          style={{ fontSize: `${scaledFontSize}px` }}
+          style={{ fontSize: fontScale(fontSize, widthPct) }}
         >
           {valentine.message}
         </p>
@@ -253,62 +235,57 @@ export default function ValentinePage() {
   }
 
   const renderButtons = (element: CanvasElement) => {
-    // Scale button size based on element width (same as CanvasEditor)
-    const buttonScale = element.width / 160
-    const btnFontSize = Math.max(10, Math.min(24, 12 * buttonScale))
-    const btnPaddingX = Math.max(12, Math.min(40, 20 * buttonScale))
-    const btnPaddingY = Math.max(4, Math.min(16, 6 * buttonScale))
-    const btnGap = Math.max(8, Math.min(24, 12 * buttonScale))
+    const widthPct = pct(element.width, baseW)
 
     return (
       <div
         key={element.id}
         className="absolute flex items-center justify-center"
         style={{
-          left: element.x,
-          top: element.y,
-          width: element.width,
-          height: element.height,
+          left: `${pct(element.x, baseW)}%`,
+          top: `${pct(element.y, baseH)}%`,
+          width: `${widthPct}%`,
+          height: `${pct(element.height, baseH)}%`,
           zIndex: element.zIndex,
         }}
       >
         {!responded ? (
-          <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
+          <div className="flex items-center justify-center gap-[8%]">
             <button
               onClick={() => handleResponse(true)}
               className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
               style={{
                 backgroundColor: themeColors.primary,
-                fontSize: `${btnFontSize}px`,
-                padding: `${btnPaddingY}px ${btnPaddingX}px`
+                fontSize: fontScale(12, widthPct),
+                padding: `1.5vw 4vw`,
               }}
             >
               Yes
             </button>
             <button
               onClick={() => handleResponse(false)}
-              className="rounded-full border font-medium hover:bg-white/50 transition-all"
+              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
               style={{
                 borderColor: themeColors.primary,
                 color: themeColors.primary,
-                fontSize: `${btnFontSize}px`,
-                padding: `${btnPaddingY}px ${btnPaddingX}px`
+                fontSize: fontScale(12, widthPct),
+                padding: `1.5vw 4vw`,
               }}
             >
               No
             </button>
           </div>
         ) : (
-          <div className="text-center bg-white/80 rounded-xl p-3 shadow-md">
+          <div className="text-center bg-white/80 rounded-xl p-[4%] shadow-md">
             {response ? (
               <>
-                <span className="text-2xl mb-1 block">💕</span>
-                <p className="font-loveheart text-lg text-gray-800">Yay!</p>
+                <span className="text-2xl sm:text-3xl mb-1 block">💕</span>
+                <p className="font-loveheart text-base sm:text-lg text-gray-800">Yay!</p>
               </>
             ) : (
               <>
-                <span className="text-2xl mb-1 block">💔</span>
-                <p className="font-loveheart text-lg text-gray-800">Maybe next time</p>
+                <span className="text-2xl sm:text-3xl mb-1 block">💔</span>
+                <p className="font-loveheart text-base sm:text-lg text-gray-800">Maybe next time</p>
               </>
             )}
           </div>
@@ -325,10 +302,10 @@ export default function ValentinePage() {
         key={element.id}
         className="absolute overflow-hidden"
         style={{
-          left: element.x,
-          top: element.y,
-          width: element.width,
-          height: element.height,
+          left: `${pct(element.x, baseW)}%`,
+          top: `${pct(element.y, baseH)}%`,
+          width: `${pct(element.width, baseW)}%`,
+          height: `${pct(element.height, baseH)}%`,
           zIndex: element.zIndex,
         }}
       >
@@ -338,7 +315,7 @@ export default function ValentinePage() {
           artist={valentine.spotify_artist || undefined}
           thumbnail={valentine.spotify_thumbnail}
           themeColor={themeColors.primary}
-          compact={element.height < 120}
+          compact={false}
         />
       </div>
     )
@@ -348,16 +325,11 @@ export default function ValentinePage() {
     try {
       if (!element || !element.type) return null
       switch (element.type) {
-        case 'photo':
-          return renderPhoto(element)
-        case 'text':
-          return renderText(element)
-        case 'buttons':
-          return renderButtons(element)
-        case 'spotify':
-          return renderSpotify(element)
-        default:
-          return null
+        case 'photo': return renderPhoto(element)
+        case 'text': return renderText(element)
+        case 'buttons': return renderButtons(element)
+        case 'spotify': return renderSpotify(element)
+        default: return null
       }
     } catch (e) {
       console.error('Error rendering element:', e)
@@ -365,18 +337,17 @@ export default function ValentinePage() {
     }
   }
 
-  // Always use fallback layout for now to debug
-  // If not mounted yet or no canvas layout, render fallback
+  // Fallback layout when no canvas layout exists
   if (!mounted || !canvasLayout || !Array.isArray(elements) || elements.length === 0) {
     return (
       <main
         className="min-h-screen"
         style={{ backgroundColor: themeColors.bgColor }}
       >
-        <div className="max-w-md mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto px-6 py-10">
           {/* Photos */}
           {valentine.photos.length > 0 && (
-            <div className="mb-6 flex justify-center gap-3 flex-wrap">
+            <div className="mb-8 flex justify-center gap-4 flex-wrap">
               {valentine.photos.map((photo, i) => (
                 <div
                   key={i}
@@ -390,7 +361,7 @@ export default function ValentinePage() {
                     ['--theme-primary' as string]: themeColors.primary,
                   }}
                 >
-                  <div className="w-28 h-28 overflow-hidden">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 overflow-hidden">
                     <img
                       src={photo.photo_url}
                       alt={`Photo ${i + 1}`}
@@ -404,10 +375,9 @@ export default function ValentinePage() {
 
           {/* Message */}
           {valentine.message && (
-            <div className="text-center mb-6 px-4">
+            <div className="text-center mb-8 px-2">
               <p
-                className="font-loveheart leading-relaxed text-gray-800"
-                style={{ fontSize: `${fontSize}px` }}
+                className="font-loveheart leading-relaxed text-gray-800 text-xl sm:text-2xl"
               >
                 {valentine.message}
               </p>
@@ -415,7 +385,7 @@ export default function ValentinePage() {
           )}
 
           {/* Buttons */}
-          <div className="mb-6">
+          <div className="mb-8">
             {!responded ? (
               <div className="flex justify-center gap-4">
                 <button
@@ -454,23 +424,23 @@ export default function ValentinePage() {
 
           {/* Spotify */}
           {valentine.spotify_link && (
-            <div className="mb-6 px-4">
+            <div className="mb-8">
               <SpotifyCard
                 spotifyLink={valentine.spotify_link}
                 title={valentine.spotify_title || undefined}
                 artist={valentine.spotify_artist || undefined}
                 thumbnail={valentine.spotify_thumbnail}
                 themeColor={themeColors.primary}
-                compact
+                compact={false}
               />
             </div>
           )}
 
           {/* From */}
           {valentine.sender_name && (
-            <div className="text-center">
-              <p className="text-gray-600 text-sm">
-                With love from <span className="font-medium">{valentine.sender_name}</span>
+            <div className="text-center pt-4">
+              <p className="text-gray-500 text-sm">
+                With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
               </p>
             </div>
           )}
@@ -479,31 +449,30 @@ export default function ValentinePage() {
     )
   }
 
-  // Render with canvas layout
+  // Render with canvas layout — percentage-based positioning
   return (
     <main
-      className="min-h-screen flex items-center justify-center overflow-hidden"
-      style={{ backgroundColor: themeColors.bgColor }}
+      className="min-h-screen relative overflow-hidden"
+      style={{
+        backgroundColor: themeColors.bgColor,
+        // Maintain the aspect ratio of the original canvas
+        aspectRatio: `${baseW} / ${baseH}`,
+        maxHeight: '100vh',
+        margin: '0 auto',
+      }}
     >
-      <div
-        className="relative"
-        style={{
-          width: canvasWidth,
-          height: canvasHeight,
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
-        }}
-      >
+      {/* Container that maps to the canvas coordinate space */}
+      <div className="relative w-full h-full" style={{ minHeight: '100vh' }}>
         {elements.map(renderElement)}
 
-        {/* From - always at the bottom */}
+        {/* From — pinned to bottom */}
         {valentine.sender_name && (
           <div
-            className="absolute bottom-2 left-0 right-0 text-center"
+            className="absolute bottom-4 left-0 right-0 text-center"
             style={{ zIndex: 1000 }}
           >
-            <p className="text-gray-600 text-[10px]">
-              With love from <span className="font-medium">{valentine.sender_name}</span>
+            <p className="text-gray-500 text-xs sm:text-sm">
+              With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
             </p>
           </div>
         )}

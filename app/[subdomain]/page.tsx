@@ -369,35 +369,48 @@ export default function ValentinePage() {
     }
   }
 
+  // Scattered hearts across the full page
+  const scatteredHearts = [
+    { left: '5%',  top: '8%',  size: 12, duration: 7,   delay: 0 },
+    { left: '88%', top: '5%',  size: 10, duration: 9,   delay: 1.5 },
+    { left: '15%', top: '22%', size: 14, duration: 8,   delay: 0.8 },
+    { left: '75%', top: '18%', size: 9,  duration: 10,  delay: 3.2 },
+    { left: '45%', top: '12%', size: 11, duration: 11,  delay: 2.1 },
+    { left: '92%', top: '35%', size: 13, duration: 7.5, delay: 0.3 },
+    { left: '3%',  top: '45%', size: 10, duration: 9.5, delay: 4 },
+    { left: '55%', top: '40%', size: 15, duration: 8,   delay: 1.8 },
+    { left: '30%', top: '55%', size: 11, duration: 10,  delay: 2.5 },
+    { left: '82%', top: '52%', size: 12, duration: 6.5, delay: 0.6 },
+    { left: '10%', top: '68%', size: 14, duration: 8.5, delay: 3.5 },
+    { left: '65%', top: '65%', size: 10, duration: 11,  delay: 1.2 },
+    { left: '40%', top: '78%', size: 13, duration: 7,   delay: 4.5 },
+    { left: '90%', top: '75%', size: 9,  duration: 9,   delay: 2.8 },
+    { left: '20%', top: '88%', size: 12, duration: 10,  delay: 0.9 },
+    { left: '70%', top: '85%', size: 11, duration: 8,   delay: 3.8 },
+    { left: '50%', top: '92%', size: 14, duration: 7.5, delay: 1.6 },
+  ]
+
   // Fallback layout when no canvas layout exists
   if (!mounted || !canvasLayout || !Array.isArray(elements) || elements.length === 0) {
-    const fallbackHearts = [
-      { left: '5%',  bottom: '3%',  size: 16, duration: 9,  delay: 0 },
-      { left: '20%', bottom: '8%',  size: 11, duration: 11, delay: 1.2 },
-      { left: '45%', bottom: '1%',  size: 18, duration: 8,  delay: 2.8 },
-      { left: '70%', bottom: '6%',  size: 12, duration: 10, delay: 0.5 },
-      { left: '90%', bottom: '4%',  size: 14, duration: 12, delay: 3.2 },
-      { left: '35%', bottom: '10%', size: 10, duration: 7.5, delay: 4.1 },
-    ]
 
     return (
       <main
         className="min-h-screen relative overflow-hidden"
         style={{ backgroundColor: themeColors.bgColor }}
       >
-        {/* Floating background hearts */}
-        {fallbackHearts.map((heart, i) => (
+        {/* Scattered background hearts */}
+        {scatteredHearts.map((heart, i) => (
           <span
             key={`heart-${i}`}
-            className="absolute animate-float-up"
+            className="absolute animate-heart-drift"
             style={{
               left: heart.left,
-              bottom: heart.bottom,
+              top: heart.top,
               fontSize: heart.size,
               animationDuration: `${heart.duration}s`,
               animationDelay: `${heart.delay}s`,
               color: themeColors.primary,
-              opacity: 0.18,
+              opacity: 0.15,
               zIndex: 0,
             }}
           >
@@ -510,18 +523,6 @@ export default function ValentinePage() {
     )
   }
 
-  // Floating hearts configuration — positions spread across the canvas
-  const floatingHearts = [
-    { left: '8%',  bottom: '5%',  size: 14, duration: 8,  delay: 0 },
-    { left: '25%', bottom: '10%', size: 10, duration: 10, delay: 1.5 },
-    { left: '50%', bottom: '2%',  size: 16, duration: 9,  delay: 3 },
-    { left: '72%', bottom: '8%',  size: 11, duration: 11, delay: 0.8 },
-    { left: '88%', bottom: '4%',  size: 13, duration: 7,  delay: 2.5 },
-    { left: '15%', bottom: '15%', size: 9,  duration: 12, delay: 4 },
-    { left: '60%', bottom: '12%', size: 12, duration: 8.5, delay: 1 },
-    { left: '40%', bottom: '7%',  size: 15, duration: 10.5, delay: 3.5 },
-  ]
-
   // Render with canvas layout — scale transform to fit screen
   // Elements are placed at their original pixel positions, then the
   // whole container is uniformly scaled to fill the viewport.
@@ -530,9 +531,29 @@ export default function ValentinePage() {
 
   return (
     <main
-      className="w-screen h-screen overflow-hidden flex items-center justify-center"
+      className="w-screen h-screen overflow-hidden flex items-center justify-center relative"
       style={{ backgroundColor: themeColors.bgColor }}
     >
+      {/* Scattered background hearts across full viewport */}
+      {scatteredHearts.map((heart, i) => (
+        <span
+          key={`heart-${i}`}
+          className="absolute animate-heart-drift"
+          style={{
+            left: heart.left,
+            top: heart.top,
+            fontSize: heart.size,
+            animationDuration: `${heart.duration}s`,
+            animationDelay: `${heart.delay}s`,
+            color: themeColors.primary,
+            opacity: 0.15,
+            zIndex: 0,
+          }}
+        >
+          ♥
+        </span>
+      ))}
+
       {/* Scaled canvas — centered, fits entirely within viewport */}
       <div
         className="relative"
@@ -541,28 +562,9 @@ export default function ValentinePage() {
           height: baseH,
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
+          zIndex: 1,
         }}
       >
-        {/* Floating background hearts */}
-        {floatingHearts.map((heart, i) => (
-          <span
-            key={`heart-${i}`}
-            className="absolute animate-float-up"
-            style={{
-              left: heart.left,
-              bottom: heart.bottom,
-              fontSize: heart.size,
-              animationDuration: `${heart.duration}s`,
-              animationDelay: `${heart.delay}s`,
-              color: themeColors.primary,
-              opacity: 0.18,
-              zIndex: 0,
-            }}
-          >
-            ♥
-          </span>
-        ))}
-
         {elements.map(renderElement)}
 
       </div>

@@ -255,3 +255,24 @@ body {
   animation: float-up linear infinite;
   pointer-events: none;
 }
+
+/* Gentle ambient drift for scattered background hearts */
+@keyframes heart-drift {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) translateX(5px) scale(1.05);
+  }
+  50% {
+    transform: translateY(-3px) translateX(-4px) scale(0.97);
+  }
+  75% {
+    transform: translateY(-10px) translateX(3px) scale(1.02);
+  }
+}
+
+.animate-heart-drift {
+  animation: heart-drift ease-in-out infinite;
+  pointer-events: none;
+}

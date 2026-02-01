@@ -150,27 +150,44 @@ export default function CreatePage() {
     setIsSubmitting(true)
 
     try {
+      const payload = {
+        recipientName,
+        senderName,
+        message,
+        spotifyLink,
+        theme,
+        photoStyle,
+        font,
+        fontSize,
+        photos,
+        canvasState,
+        userId: user?.id,
+        creatorEmail: creatorEmail.trim() || null,
+      }
+
+      console.log('Submitting valentine, photos:', photos.length, 'canvasState elements:', canvasState?.mobile?.length)
+
+      let body: string
+      try {
+        body = JSON.stringify(payload)
+      } catch (jsonErr) {
+        console.error('JSON stringify failed:', jsonErr)
+        alert('Failed to serialize data. Please try again.')
+        return
+      }
+
+      console.log('Payload size:', (body.length / 1024 / 1024).toFixed(2), 'MB')
+
       const response = await fetch('/api/create-valentine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientName,
-          senderName,
-          message,
-          spotifyLink,
-          theme,
-          photoStyle,
-          font,
-          fontSize,
-          photos,
-          canvasState,
-          userId: user?.id,
-          creatorEmail: creatorEmail.trim() || null,
-        }),
+        body,
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create valentine')
+        const errData = await response.json().catch(() => null)
+        console.error('Create valentine error:', response.status, errData)
+        throw new Error(errData?.error || 'Failed to create valentine')
       }
 
       const data = await response.json()

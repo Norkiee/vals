@@ -35,6 +35,8 @@ interface CanvasEditorProps {
   viewMode?: 'mobile' | 'desktop'
   recipientName?: string
   fontSize?: number
+  templateMode?: boolean
+  placeholderCount?: number
 }
 
 const MOBILE_WIDTH = 220
@@ -42,13 +44,13 @@ const MOBILE_HEIGHT = 476
 const DESKTOP_WIDTH = 800
 const DESKTOP_HEIGHT = 500
 
-export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop' = 'mobile'): CanvasElement[] {
+// --- Layout algorithms ---
+
+function getScatteredLayout(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop'): CanvasElement[] {
   const elements: CanvasElement[] = []
 
   if (mode === 'mobile') {
-    const TOP_OFFSET = 40 // Account for Dynamic Island
-
-    // Position photos in a scattered layout
+    const TOP_OFFSET = 40
     for (let i = 0; i < photoCount; i++) {
       elements.push({
         id: `photo-${i}`,
@@ -62,46 +64,23 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
         zIndex: i + 1,
       })
     }
-
-    // Text element
     elements.push({
-      id: 'text-1',
-      type: 'text',
-      x: 10,
-      y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
-      width: 200,
-      height: 60,
-      rotation: 0,
-      zIndex: photoCount + 1,
+      id: 'text-1', type: 'text',
+      x: 10, y: photoCount > 0 ? TOP_OFFSET + 180 : TOP_OFFSET + 80,
+      width: 200, height: 60, rotation: 0, zIndex: photoCount + 1,
     })
-
-    // Buttons element
     elements.push({
-      id: 'buttons-1',
-      type: 'buttons',
-      x: 30,
-      y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
-      width: 160,
-      height: 40,
-      rotation: 0,
-      zIndex: photoCount + 2,
+      id: 'buttons-1', type: 'buttons',
+      x: 30, y: photoCount > 0 ? TOP_OFFSET + 250 : TOP_OFFSET + 150,
+      width: 160, height: 40, rotation: 0, zIndex: photoCount + 2,
     })
-
-    // Spotify element
     if (hasSpotify) {
       elements.push({
-        id: 'spotify-1',
-        type: 'spotify',
-        x: 10,
-        y: TOP_OFFSET + 310,
-        width: 200,
-        height: 80,
-        rotation: 0,
-        zIndex: photoCount + 3,
+        id: 'spotify-1', type: 'spotify',
+        x: 10, y: TOP_OFFSET + 310, width: 200, height: 80, rotation: 0, zIndex: photoCount + 3,
       })
     }
   } else {
-    // Desktop layout - larger canvas (800x500)
     for (let i = 0; i < photoCount; i++) {
       elements.push({
         id: `photo-${i}`,
@@ -115,47 +94,29 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
         zIndex: i + 1,
       })
     }
-
-    // Text element
     elements.push({
-      id: 'text-1',
-      type: 'text',
-      x: 40,
-      y: photoCount > 0 ? 260 : 100,
-      width: 500,
-      height: 80,
-      rotation: 0,
-      zIndex: photoCount + 1,
+      id: 'text-1', type: 'text',
+      x: 40, y: photoCount > 0 ? 260 : 100,
+      width: 500, height: 80, rotation: 0, zIndex: photoCount + 1,
     })
-
-    // Buttons element
     elements.push({
-      id: 'buttons-1',
-      type: 'buttons',
-      x: 300,
-      y: photoCount > 0 ? 360 : 200,
-      width: 200,
-      height: 50,
-      rotation: 0,
-      zIndex: photoCount + 2,
+      id: 'buttons-1', type: 'buttons',
+      x: 300, y: photoCount > 0 ? 360 : 200,
+      width: 200, height: 50, rotation: 0, zIndex: photoCount + 2,
     })
-
-    // Spotify element
     if (hasSpotify) {
       elements.push({
-        id: 'spotify-1',
-        type: 'spotify',
-        x: 40,
-        y: photoCount > 0 ? 360 : 300,
-        width: 220,
-        height: 80,
-        rotation: 0,
-        zIndex: photoCount + 3,
+        id: 'spotify-1', type: 'spotify',
+        x: 40, y: photoCount > 0 ? 360 : 300,
+        width: 220, height: 80, rotation: 0, zIndex: photoCount + 3,
       })
     }
   }
-
   return elements
+}
+
+export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, mode: 'mobile' | 'desktop' = 'mobile'): CanvasElement[] {
+  return getScatteredLayout(photoCount, hasSpotify, mode)
 }
 
 export function getDefaultCanvasStates(photoCount: number, hasSpotify: boolean): CanvasState {
@@ -177,20 +138,23 @@ export default function CanvasEditor({
   viewMode = 'mobile',
   recipientName = '',
   fontSize = 16,
+  templateMode = false,
+  placeholderCount = 3,
 }: CanvasEditorProps) {
   const themeColors = THEMES[theme]
   const canvasRef = useRef<HTMLDivElement>(null)
+  const prevPlaceholderCountRef = useRef<number>(placeholderCount)
 
   // Separate states for mobile and desktop
   const [mobileElements, setMobileElements] = useState<CanvasElement[]>(() =>
     canvasState?.mobile && canvasState.mobile.length > 0
       ? canvasState.mobile
-      : getDefaultCanvasState(photos.length, !!spotifyLink, 'mobile')
+      : getDefaultCanvasState(templateMode ? placeholderCount : photos.length, !!spotifyLink, 'mobile')
   )
   const [desktopElements, setDesktopElements] = useState<CanvasElement[]>(() =>
     canvasState?.desktop && canvasState.desktop.length > 0
       ? canvasState.desktop
-      : getDefaultCanvasState(photos.length, !!spotifyLink, 'desktop')
+      : getDefaultCanvasState(templateMode ? placeholderCount : photos.length, !!spotifyLink, 'desktop')
   )
 
   // Get current elements based on view mode
@@ -221,53 +185,92 @@ export default function CanvasEditor({
     setPrimarySelectedId(null)
   }, [viewMode])
 
-  // Update elements when photos change - for both modes
+  // Sync external canvasState prop into internal state (e.g. when a template is selected)
+  // Use a flag to avoid infinite loop: internal changes → onCanvasStateChange → parent setState → new prop → sync effect
+  const isInternalUpdateRef = useRef(false)
   useEffect(() => {
+    if (isInternalUpdateRef.current) {
+      isInternalUpdateRef.current = false
+      return
+    }
+    if (canvasState?.mobile && canvasState.mobile.length > 0) {
+      setMobileElements(canvasState.mobile)
+    }
+    if (canvasState?.desktop && canvasState.desktop.length > 0) {
+      setDesktopElements(canvasState.desktop)
+    }
+  }, [canvasState])
+
+  // In template mode, regenerate photo placeholder elements when placeholderCount changes
+  useEffect(() => {
+    if (!templateMode) return
+    if (placeholderCount === prevPlaceholderCountRef.current) return
+    prevPlaceholderCountRef.current = placeholderCount
+
+    const updatePlaceholders = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
+      const nonPhotoElements = prev.filter(e => e.type !== 'photo')
+      const existingPhotos = prev.filter(e => e.type === 'photo')
+
+      if (placeholderCount > existingPhotos.length) {
+        // Add new placeholder slots
+        const referenceLayout = getDefaultCanvasState(placeholderCount, !!spotifyLink, mode)
+        const newPhotos = [...existingPhotos]
+        for (let i = existingPhotos.length; i < placeholderCount; i++) {
+          const ref = referenceLayout.find(e => e.type === 'photo' && e.photoIndex === i)
+          if (ref) {
+            newPhotos.push({ ...ref, zIndex: nonPhotoElements.length + newPhotos.length + 1 })
+          }
+        }
+        return [...nonPhotoElements, ...newPhotos]
+      } else {
+        // Remove excess placeholder slots (keep first N)
+        return [...nonPhotoElements, ...existingPhotos.slice(0, placeholderCount)]
+      }
+    }
+
+    setMobileElements(prev => updatePlaceholders(prev, 'mobile'))
+    setDesktopElements(prev => updatePlaceholders(prev, 'desktop'))
+    setSelectedIds([])
+    setPrimarySelectedId(null)
+  }, [templateMode, placeholderCount, spotifyLink])
+
+  // Update elements when photos change - for both modes (skip in template mode)
+  useEffect(() => {
+    if (templateMode) return
+
     const updateElementsWithPhotos = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
-      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
-      const existingPhotoIds = prev.filter(e => e.type === 'photo').map(e => e.photoIndex)
+      const existingPhotoElements = prev.filter(e => e.type === 'photo')
+      const existingPhotoIds = existingPhotoElements.map(e => e.photoIndex)
       const newElements = [...prev]
 
-      // Add new photos
+      // For new photos beyond existing element slots, add new positions
       for (let i = 0; i < photos.length; i++) {
         if (!existingPhotoIds.includes(i)) {
-          if (mode === 'mobile') {
-            newElements.push({
-              id: `photo-${i}`,
-              type: 'photo',
-              photoIndex: i,
-              x: 30 + (i % 2) * 80,
-              y: TOP_OFFSET + 10 + Math.floor(i / 2) * 90,
-              width: 70,
-              height: 70,
-              rotation: (i % 2 === 0 ? -5 : 5),
-              zIndex: newElements.length + 1,
-            })
-          } else {
-            newElements.push({
-              id: `photo-${i}`,
-              type: 'photo',
-              photoIndex: i,
-              x: 40 + (i % 4) * 180,
-              y: 40 + Math.floor(i / 4) * 180,
-              width: 150,
-              height: 150,
-              rotation: (i % 2 === 0 ? -3 : 3),
-              zIndex: newElements.length + 1,
-            })
+          // Check if there's a template slot we can reuse (element exists but had no photo)
+          const emptySlot = existingPhotoElements.find(e => e.photoIndex === i)
+          if (!emptySlot) {
+            // Generate a default position for this new photo
+            const referenceLayout = getDefaultCanvasState(photos.length, !!spotifyLink, mode)
+            const ref = referenceLayout.find(e => e.type === 'photo' && e.photoIndex === i)
+            if (ref) {
+              newElements.push({ ...ref, zIndex: newElements.length + 1 })
+            }
           }
         }
       }
 
-      // Remove photos that no longer exist
+      // Only remove photo elements that are beyond what photos + template slots need
+      // Keep template placeholder slots (they may not have photos yet)
+      const maxSlot = Math.max(photos.length, existingPhotoElements.length)
       return newElements.filter(e =>
-        e.type !== 'photo' || (e.photoIndex !== undefined && e.photoIndex < photos.length)
+        e.type !== 'photo' || (e.photoIndex !== undefined && e.photoIndex < maxSlot)
       )
     }
 
     setMobileElements(prev => updateElementsWithPhotos(prev, 'mobile'))
     setDesktopElements(prev => updateElementsWithPhotos(prev, 'desktop'))
-  }, [photos.length])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos.length, spotifyLink])
 
   // Ensure text and buttons elements always exist - for both modes
   useEffect(() => {
@@ -313,8 +316,10 @@ export default function CanvasEditor({
     setDesktopElements(prev => ensureTextAndButtons(prev, 'desktop'))
   }, [])
 
-  // Add spotify when link is added - for both modes
+  // Add spotify when link is added - for both modes (skip in template mode — spotify always present)
   useEffect(() => {
+    if (templateMode) return
+
     const addOrRemoveSpotify = (prev: CanvasElement[], mode: 'mobile' | 'desktop') => {
       const hasSpotify = prev.some(e => e.type === 'spotify')
       const TOP_OFFSET = mode === 'mobile' ? 40 : 0
@@ -330,18 +335,19 @@ export default function CanvasEditor({
           rotation: 0,
           zIndex: prev.length + 1,
         }]
-      } else if (!spotifyLink && hasSpotify) {
-        return prev.filter(e => e.type !== 'spotify')
       }
+      // Don't remove spotify elements — they may come from a template layout
       return prev
     }
 
     setMobileElements(prev => addOrRemoveSpotify(prev, 'mobile'))
     setDesktopElements(prev => addOrRemoveSpotify(prev, 'desktop'))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spotifyLink])
 
   // Notify parent of state changes - send both states
   useEffect(() => {
+    isInternalUpdateRef.current = true
     onCanvasStateChange?.({ mobile: mobileElements, desktop: desktopElements })
   }, [mobileElements, desktopElements, onCanvasStateChange])
 
@@ -584,8 +590,40 @@ export default function CanvasEditor({
     const content = (() => {
       switch (element.type) {
         case 'photo':
+          if (templateMode) {
+            return (
+              <div
+                className={`w-full h-full ${
+                  photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
+                }`}
+                style={{ ['--theme-primary' as string]: themeColors.primary }}
+              >
+                <div className="w-full h-full bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center rounded-lg">
+                  <span className="text-2xl font-bold text-gray-400">
+                    {(element.photoIndex ?? 0) + 1}
+                  </span>
+                </div>
+              </div>
+            )
+          }
           const photo = element.photoIndex !== undefined ? photos[element.photoIndex] : null
-          if (!photo) return null
+          if (!photo) {
+            // Show placeholder for unfilled template slots
+            return (
+              <div
+                className={`w-full h-full ${
+                  photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
+                }`}
+                style={{ ['--theme-primary' as string]: themeColors.primary }}
+              >
+                <div className="w-full h-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center rounded">
+                  <span className="text-lg font-medium text-gray-300">
+                    {(element.photoIndex ?? 0) + 1}
+                  </span>
+                </div>
+              </div>
+            )
+          }
           return (
             <div
               className={`w-full h-full ${
@@ -654,14 +692,14 @@ export default function CanvasEditor({
           )
 
         case 'spotify':
-          if (!spotifyLink) return null
+          const usePlaceholder = !spotifyLink || templateMode
           return (
             <div className="w-full h-full overflow-hidden">
               <SpotifyCard
-                spotifyLink={spotifyLink}
-                title={spotifyMeta?.title}
-                artist={spotifyMeta?.artist}
-                thumbnail={spotifyMeta?.thumbnail}
+                spotifyLink={usePlaceholder ? 'https://open.spotify.com/track/placeholder' : spotifyLink}
+                title={usePlaceholder ? 'Song title' : spotifyMeta?.title}
+                artist={usePlaceholder ? 'Artist name' : spotifyMeta?.artist}
+                thumbnail={usePlaceholder ? undefined : spotifyMeta?.thumbnail}
                 themeColor={themeColors.primary}
                 compact={element.height < 120}
               />

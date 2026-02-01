@@ -6,6 +6,7 @@ import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
 import PhotoStyleToggle from '@/components/PhotoStyleToggle'
 import CanvasEditor, { CanvasState } from '@/components/CanvasEditor'
+import TemplateSelector, { Template } from '@/components/TemplateSelector'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeKey, PhotoStyle, FONTS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
 import { generateSubdomain } from '@/lib/utils'
@@ -30,6 +31,11 @@ export default function CreatePage() {
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
   const [spotifyMeta, setSpotifyMeta] = useState<SpotifyMetadata | null>(null)
   const [loadingSpotify, setLoadingSpotify] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+
+  // Templates
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
   // Subdomain availability
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null)
@@ -53,6 +59,37 @@ export default function CreatePage() {
       setSenderName(user.user_metadata.full_name)
     }
   }, [user, senderName])
+
+  // Fetch templates on mount
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const res = await fetch('/api/templates')
+        const data = await res.json()
+        setTemplates(data)
+        // Select "Classic" (first template) by default
+        if (data.length > 0 && !selectedTemplateId) {
+          handleTemplateSelect(data[0])
+        }
+      } catch {
+        // Templates are optional — form works without them
+      }
+    }
+    fetchTemplates()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleTemplateSelect = useCallback((template: Template) => {
+    setSelectedTemplateId(template.id)
+    setTheme(template.theme)
+    setPhotoStyle(template.photo_style as PhotoStyle)
+    setFont(template.font_family)
+    setFontSize(template.font_size)
+    // Load the exact canvas positions from the template
+    if (template.canvas_layout) {
+      setCanvasState(template.canvas_layout)
+    }
+  }, [])
 
   // Fetch Spotify metadata when link changes
   useEffect(() => {
@@ -214,15 +251,23 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="h-screen flex overflow-hidden">
+    <main className="min-h-screen lg:h-screen lg:flex lg:overflow-hidden bg-[#fafafa]">
       {/* Left side - Form (scrollable) */}
-      <div className="w-full lg:w-[400px] xl:w-[450px] 2xl:w-[500px] bg-[#fafafa] flex-shrink-0 h-screen overflow-y-auto">
-        <div className="px-6 lg:px-10 xl:px-12 py-6 lg:py-8">
+      <div className="w-full lg:w-[400px] xl:w-[450px] 2xl:w-[500px] bg-[#fafafa] flex-shrink-0 lg:h-screen lg:overflow-y-auto">
+        <div className="px-4 sm:px-6 lg:px-10 xl:px-12 py-6 lg:py-8 max-w-lg mx-auto lg:max-w-none">
           <h1 className="font-loveheart text-3xl md:text-4xl text-gray-900 mb-6">
             CREATE YOUR VALENTINE
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {templates.length > 0 && (
+              <TemplateSelector
+                templates={templates}
+                selectedId={selectedTemplateId}
+                onSelect={handleTemplateSelect}
+              />
+            )}
+
             <PhotoUpload photos={photos} onPhotosChange={setPhotos} />
 
             <div className="space-y-2">
@@ -242,12 +287,12 @@ export default function CreatePage() {
                       <span className="text-xs text-gray-400">Checking...</span>
                     ) : subdomainAvailable === true ? (
                       <>
-                        <span className="text-xs text-gray-400">{subdomain}.askcuter.xyz</span>
+                        <span className="text-xs text-gray-400 hidden sm:inline">{subdomain}.askcuter.xyz</span>
                         <span className="text-green-500">✓</span>
                       </>
                     ) : subdomainAvailable === false ? (
                       <>
-                        <span className="text-xs text-gray-400">{subdomain}.askcuter.xyz</span>
+                        <span className="text-xs text-gray-400 hidden sm:inline">{subdomain}.askcuter.xyz</span>
                         <span className="text-red-500">✗</span>
                       </>
                     ) : null}
@@ -262,7 +307,7 @@ export default function CreatePage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 maxLength={MAX_MESSAGE_LENGTH}
-                rows={4}
+                rows={3}
                 placeholder="You make every day feel like Valentine's Day. Will you officially be mine?"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none bg-white"
               />
@@ -294,6 +339,69 @@ export default function CreatePage() {
               <p className="text-xs text-gray-400">Get notified when they respond</p>
             </div>
 
+            {/* Mobile preview toggle */}
+            <button
+              type="button"
+              onClick={() => setShowPreview(!showPreview)}
+              className="w-full py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white transition-colors flex items-center justify-center gap-2 lg:hidden"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {showPreview ? 'Hide preview' : 'Preview valentine'}
+            </button>
+
+            {/* Inline mobile preview */}
+            {showPreview && (
+              <div className="lg:hidden">
+                {/* Mobile toolbar */}
+                <div className="flex items-center gap-2 flex-wrap pb-3">
+                  <div className="bg-white rounded-full shadow-sm p-2 border border-gray-100">
+                    <ColorPicker value={theme} onChange={(t) => { setTheme(t); setSelectedTemplateId(null) }} />
+                  </div>
+                  <div className="bg-white rounded-full shadow-sm px-3 py-2 border border-gray-100">
+                    <PhotoStyleToggle value={photoStyle} onChange={(ps) => { setPhotoStyle(ps); setSelectedTemplateId(null) }} />
+                  </div>
+                  <div className="bg-white rounded-full shadow-sm px-2 py-2 border border-gray-100 flex items-center gap-1">
+                    <button
+                      onClick={() => setFontSize(prev => Math.max(8, prev - 2))}
+                      className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                    <span className="text-xs font-medium w-5 text-center">{fontSize}</span>
+                    <button
+                      onClick={() => setFontSize(prev => Math.min(48, prev + 2))}
+                      className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <CanvasEditor
+                    photos={photos}
+                    message={message}
+                    spotifyLink={spotifyLink}
+                    spotifyMeta={spotifyMeta}
+                    theme={theme}
+                    photoStyle={photoStyle}
+                    canvasState={canvasState}
+                    onCanvasStateChange={setCanvasState}
+                    viewMode="mobile"
+                    recipientName={recipientName}
+                    fontSize={fontSize}
+                  />
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={!isValid || isSubmitting}
@@ -305,21 +413,21 @@ export default function CreatePage() {
         </div>
       </div>
 
-      {/* Right side - Canvas Editor (fixed) */}
+      {/* Right side - Canvas Editor (desktop only) */}
       <div className="hidden lg:flex flex-1 bg-white flex-col h-screen overflow-hidden">
         {/* Floating toolbar */}
-        <div className="flex items-center justify-center gap-3 py-4">
+        <div className="flex items-center justify-center gap-2 xl:gap-3 py-4 px-4 flex-wrap">
           {/* Color picker */}
           <div className="bg-white rounded-full shadow-sm p-2.5 border border-gray-100">
-            <ColorPicker value={theme} onChange={setTheme} />
+            <ColorPicker value={theme} onChange={(t) => { setTheme(t); setSelectedTemplateId(null) }} />
           </div>
 
           {/* Font selector */}
-          <div className="bg-white rounded-full shadow-sm px-5 py-2.5 border border-gray-100">
+          <div className="bg-white rounded-full shadow-sm px-4 xl:px-5 py-2.5 border border-gray-100">
             <select
               value={font}
               onChange={(e) => setFont(e.target.value)}
-              className="text-base bg-transparent border-none focus:outline-none cursor-pointer"
+              className="text-sm xl:text-base bg-transparent border-none focus:outline-none cursor-pointer"
             >
               {FONTS.map((f) => (
                 <option key={f.name} value={f.name}>
@@ -354,8 +462,8 @@ export default function CreatePage() {
           </div>
 
           {/* Photo style toggle */}
-          <div className="bg-white rounded-full shadow-sm px-5 py-2.5 border border-gray-100">
-            <PhotoStyleToggle value={photoStyle} onChange={setPhotoStyle} />
+          <div className="bg-white rounded-full shadow-sm px-4 xl:px-5 py-2.5 border border-gray-100">
+            <PhotoStyleToggle value={photoStyle} onChange={(ps) => { setPhotoStyle(ps); setSelectedTemplateId(null) }} />
           </div>
 
           {/* View mode toggle */}

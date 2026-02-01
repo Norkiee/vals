@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
 import { SpotifyMetadata } from '@/lib/spotify'
@@ -347,6 +347,59 @@ export default function CanvasEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spotifyLink])
 
+  // Ref for measuring actual rendered text content height
+  const textContentRef = useRef<HTMLParagraphElement>(null)
+
+  // Auto-grow text element height when content overflows (measured from actual DOM)
+  // Grows the active viewMode from the real paragraph, and the other mode via off-screen measurement
+  useLayoutEffect(() => {
+    if (!message) return
+
+    // Grow the currently rendered mode using the actual DOM element
+    if (textContentRef.current) {
+      const textEl = elements.find(el => el.type === 'text')
+      if (textEl) {
+        const padding = 16
+        const needed = textContentRef.current.scrollHeight + padding
+        if (needed > textEl.height) {
+          setElements(prev => prev.map(el =>
+            el.id === textEl.id ? { ...el, height: needed } : el
+          ))
+        }
+      }
+    }
+
+    // Grow the OTHER mode via off-screen measurement so it stays in sync
+    const otherSetElements = viewMode === 'mobile' ? setDesktopElements : setMobileElements
+    const otherElements = viewMode === 'mobile' ? desktopElements : mobileElements
+    const otherTextEl = otherElements.find(el => el.type === 'text')
+    if (otherTextEl) {
+      const textScale = otherTextEl.width / 200
+      const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
+      const padding = 16
+      const measurer = document.createElement('div')
+      measurer.style.position = 'absolute'
+      measurer.style.visibility = 'hidden'
+      measurer.style.width = `${otherTextEl.width - padding}px`
+      measurer.style.fontSize = `${scaledFontSize}px`
+      measurer.style.fontFamily = `'${font}', cursive`
+      measurer.style.lineHeight = '1.625'
+      measurer.style.textAlign = 'center'
+      measurer.style.whiteSpace = 'pre-wrap'
+      measurer.style.wordBreak = 'break-word'
+      measurer.textContent = message
+      document.body.appendChild(measurer)
+      const needed = measurer.scrollHeight + padding
+      document.body.removeChild(measurer)
+      if (needed > otherTextEl.height) {
+        otherSetElements(prev => prev.map(el =>
+          el.id === otherTextEl.id ? { ...el, height: needed } : el
+        ))
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message, fontSize, font, viewMode])
+
   // Notify parent of state changes - send both states
   useEffect(() => {
     isInternalUpdateRef.current = true
@@ -650,8 +703,9 @@ export default function CanvasEditor({
           const textScale = element.width / 200
           const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
           return (
-            <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
+            <div className="w-full h-full flex items-center justify-center p-2">
               <p
+                ref={textContentRef}
                 className="leading-relaxed text-center"
                 style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px`, fontFamily: `'${font}', cursive` }}
               >

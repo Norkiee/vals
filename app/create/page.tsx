@@ -371,7 +371,7 @@ export default function CreatePage() {
 
             {/* Inline mobile preview */}
             {showPreview && (
-              <div className="lg:hidden">
+              <div className="lg:hidden isolate">
                 {/* Mobile toolbar */}
                 <div className="flex items-center gap-2 flex-wrap pb-3">
                   <div className="bg-white rounded-full shadow-sm p-2 border border-gray-100">
@@ -510,7 +510,7 @@ export default function CreatePage() {
         </div>
 
         {/* Canvas Editor */}
-        <div className="flex-1 flex items-center justify-center p-4 xl:p-8 overflow-auto">
+        <div className="flex-1 flex items-center justify-center p-4 xl:p-8 overflow-auto isolate">
           <CanvasEditor
             photos={photos}
             message={message}
@@ -529,7 +529,7 @@ export default function CreatePage() {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center relative">
             <button
               onClick={() => setShowSuccessModal(false)}

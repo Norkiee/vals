@@ -660,7 +660,7 @@ export default function CanvasEditor({
           const scaleX = element.width / EMBED_BASE_WIDTH
           const scaleY = element.height / EMBED_BASE_HEIGHT
           return (
-            <div className="w-full h-full overflow-hidden">
+            <div className="w-full h-full overflow-hidden relative">
               <div
                 style={{
                   width: EMBED_BASE_WIDTH,
@@ -675,6 +675,8 @@ export default function CanvasEditor({
                   compact={true}
                 />
               </div>
+              {/* Transparent overlay to capture mouse events for dragging */}
+              <div className="absolute inset-0" />
             </div>
           )
 

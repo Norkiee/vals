@@ -323,18 +323,19 @@ export default function ValentinePage() {
     return (
       <div
         key={element.id}
-        className="absolute"
+        className="absolute overflow-hidden"
         style={{
           left: element.x,
           top: element.y,
           width: element.width,
+          height: element.height,
           zIndex: element.zIndex,
         }}
       >
         <SpotifyCard
           spotifyLink={valentine.spotify_link}
           themeColor={themeColors.primary}
-          compact
+          compact={element.height < 120}
         />
       </div>
     )

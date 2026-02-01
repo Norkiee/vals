@@ -95,7 +95,7 @@ export function getDefaultCanvasState(photoCount: number, hasSpotify: boolean, m
         x: 10,
         y: TOP_OFFSET + 310,
         width: 200,
-        height: 60,
+        height: 80,
         rotation: 0,
         zIndex: photoCount + 3,
       })
@@ -326,7 +326,7 @@ export default function CanvasEditor({
           x: mode === 'mobile' ? 10 : 40,
           y: mode === 'mobile' ? TOP_OFFSET + 310 : 360,
           width: mode === 'mobile' ? 200 : 220,
-          height: mode === 'mobile' ? 60 : 80,
+          height: 80,
           rotation: 0,
           zIndex: prev.length + 1,
         }]
@@ -655,26 +655,13 @@ export default function CanvasEditor({
 
         case 'spotify':
           if (!spotifyLink) return null
-          const EMBED_BASE_WIDTH = 300
-          const EMBED_BASE_HEIGHT = 80
-          const scaleX = element.width / EMBED_BASE_WIDTH
-          const scaleY = element.height / EMBED_BASE_HEIGHT
           return (
             <div className="w-full h-full overflow-hidden relative">
-              <div
-                style={{
-                  width: EMBED_BASE_WIDTH,
-                  height: EMBED_BASE_HEIGHT,
-                  transform: `scale(${scaleX}, ${scaleY})`,
-                  transformOrigin: 'top left',
-                }}
-              >
-                <SpotifyCard
-                  spotifyLink={spotifyLink}
-                  themeColor={themeColors.primary}
-                  compact={true}
-                />
-              </div>
+              <SpotifyCard
+                spotifyLink={spotifyLink}
+                themeColor={themeColors.primary}
+                compact={element.height < 120}
+              />
               {/* Transparent overlay to capture mouse events for dragging */}
               <div className="absolute inset-0" />
             </div>

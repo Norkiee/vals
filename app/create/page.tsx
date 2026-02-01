@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
+import FontPicker from '@/components/FontPicker'
 import PhotoStyleToggle from '@/components/PhotoStyleToggle'
 import CanvasEditor, { CanvasState } from '@/components/CanvasEditor'
 import TemplateSelector, { Template } from '@/components/TemplateSelector'
@@ -422,17 +423,7 @@ export default function CreatePage() {
 
           {/* Font selector */}
           <div className="bg-white rounded-full shadow-sm px-4 xl:px-5 py-2.5 border border-gray-100">
-            <select
-              value={font}
-              onChange={(e) => setFont(e.target.value)}
-              className="text-sm xl:text-base bg-transparent border-none focus:outline-none cursor-pointer"
-            >
-              {FONTS.map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.displayName}
-                </option>
-              ))}
-            </select>
+            <FontPicker value={font} onChange={setFont} />
           </div>
 
           {/* Font size controls */}

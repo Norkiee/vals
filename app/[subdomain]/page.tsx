@@ -455,14 +455,6 @@ export default function ValentinePage() {
             </div>
           )}
 
-          {/* From */}
-          {valentine.sender_name && (
-            <div className="text-center pt-4">
-              <p className="text-gray-500 text-sm">
-                With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
-              </p>
-            </div>
-          )}
         </div>
       </main>
     )
@@ -491,17 +483,6 @@ export default function ValentinePage() {
       >
         {elements.map(renderElement)}
 
-        {/* From — inside the canvas so it scales with everything */}
-        {valentine.sender_name && (
-          <div
-            className="absolute bottom-2 left-0 right-0 text-center"
-            style={{ zIndex: 1000 }}
-          >
-            <p className="text-gray-500 text-[8px]">
-              With love from <span className="font-medium text-gray-700">{valentine.sender_name}</span>
-            </p>
-          </div>
-        )}
       </div>
     </main>
   )

@@ -195,11 +195,43 @@ export default function CanvasEditor({
       isInternalUpdateRef.current = false
       return
     }
+
+    const ensureTextAndButtons = (elements: CanvasElement[], mode: 'mobile' | 'desktop'): CanvasElement[] => {
+      const hasText = elements.some(e => e.type === 'text')
+      const hasButtons = elements.some(e => e.type === 'buttons')
+      if (hasText && hasButtons) return elements
+
+      const result = [...elements]
+      const TOP_OFFSET = mode === 'mobile' ? 40 : 0
+
+      if (!hasText) {
+        result.push({
+          id: 'text-1', type: 'text',
+          x: mode === 'mobile' ? 10 : 40,
+          y: mode === 'mobile' ? TOP_OFFSET + 80 : 100,
+          width: mode === 'mobile' ? 200 : 500,
+          height: mode === 'mobile' ? 60 : 80,
+          rotation: 0, zIndex: result.length + 1,
+        })
+      }
+      if (!hasButtons) {
+        result.push({
+          id: 'buttons-1', type: 'buttons',
+          x: mode === 'mobile' ? 30 : 300,
+          y: mode === 'mobile' ? TOP_OFFSET + 150 : 200,
+          width: mode === 'mobile' ? 160 : 200,
+          height: mode === 'mobile' ? 40 : 50,
+          rotation: 0, zIndex: result.length + 2,
+        })
+      }
+      return result
+    }
+
     if (canvasState?.mobile) {
-      setMobileElements(canvasState.mobile)
+      setMobileElements(ensureTextAndButtons(canvasState.mobile, 'mobile'))
     }
     if (canvasState?.desktop) {
-      setDesktopElements(canvasState.desktop)
+      setDesktopElements(ensureTextAndButtons(canvasState.desktop, 'desktop'))
     }
   }, [canvasState])
 

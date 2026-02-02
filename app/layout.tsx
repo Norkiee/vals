@@ -12,6 +12,21 @@ export const metadata: Metadata = {
   title: "Ask Cuter - Create Your Valentine",
   description: "Create beautiful, shareable valentine cards with personalized messages, photos, and music.",
   keywords: ["valentine", "love", "card", "personalized", "romantic"],
+  icons: {
+    icon: "/icons/favicon.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Ask Cuter",
+    title: "Ask Cuter - Create Your Valentine",
+    description: "Create beautiful, shareable valentine cards with personalized messages, photos, and music.",
+    url: "https://askcuter.xyz",
+  },
+  twitter: {
+    card: "summary",
+    title: "Ask Cuter - Create Your Valentine",
+    description: "Create beautiful, shareable valentine cards with personalized messages, photos, and music.",
+  },
 };
 
 export default function RootLayout({

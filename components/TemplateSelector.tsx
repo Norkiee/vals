@@ -79,6 +79,46 @@ export default function TemplateSelector({ templates, selectedId, onSelect }: Te
         <div className="relative z-50">
           <div className="absolute top-0 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg p-3 max-h-[320px] overflow-y-auto">
             <div className="grid grid-cols-2 gap-2">
+              {/* Blank option */}
+              <button
+                type="button"
+                onClick={() => {
+                  onSelect({
+                    id: '',
+                    name: 'Blank',
+                    description: '',
+                    theme: 'pink',
+                    photo_style: 'polaroid',
+                    font_family: 'default',
+                    font_size: 16,
+                    canvas_layout: null,
+                    placeholder_count: 0,
+                    display_order: -1,
+                  })
+                  setOpen(false)
+                }}
+                className={`rounded-lg overflow-hidden transition-all text-left ${
+                  !selectedId
+                    ? 'ring-2 ring-offset-1'
+                    : 'border border-gray-100 hover:border-gray-300'
+                }`}
+                style={{
+                  ['--tw-ring-color' as string]: !selectedId ? '#ec4899' : undefined,
+                }}
+              >
+                <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div className="bg-white px-2.5 py-2">
+                  <p className={`text-xs font-medium ${!selectedId ? 'text-gray-900' : 'text-gray-700'}`}>
+                    Blank
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Start from scratch</p>
+                </div>
+              </button>
+
               {templates.map((template) => {
                 const isSelected = selectedId === template.id
                 const themeColor = THEMES[template.theme]?.primary || '#ec4899'
@@ -91,7 +131,7 @@ export default function TemplateSelector({ templates, selectedId, onSelect }: Te
                       onSelect(template)
                       setOpen(false)
                     }}
-                    className={`rounded-xl overflow-hidden transition-all text-left ${
+                    className={`rounded-lg overflow-hidden transition-all text-left ${
                       isSelected
                         ? 'ring-2 ring-offset-1'
                         : 'border border-gray-100 hover:border-gray-300'

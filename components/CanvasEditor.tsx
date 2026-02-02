@@ -380,15 +380,16 @@ export default function CanvasEditor({
   }, [spotifyLink])
 
   // Refs for measuring actual rendered content height
-  const textContentRef = useRef<HTMLParagraphElement>(null)
+  const textContentRef = useRef<HTMLDivElement>(null)
   const buttonsContentRef = useRef<HTMLDivElement>(null)
   const spotifyContentRef = useRef<HTMLDivElement>(null)
 
-  // Auto-fit bounding boxes for buttons and spotify (not text — user resizes text manually)
+  // Auto-fit bounding boxes for text, buttons, and spotify
   const MIN_ELEMENT_HEIGHT = 30
 
   useLayoutEffect(() => {
     const refMap: { type: string; ref: React.RefObject<HTMLElement | null>; padding: number }[] = [
+      { type: 'text', ref: textContentRef, padding: 16 },
       { type: 'buttons', ref: buttonsContentRef, padding: 8 },
       { type: 'spotify', ref: spotifyContentRef, padding: 0 },
     ]
@@ -411,7 +412,7 @@ export default function CanvasEditor({
       ))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fontSize, font, viewMode, spotifyLink, spotifyMeta])
+  }, [fontSize, font, message, viewMode, spotifyLink, spotifyMeta])
 
   // Notify parent of state changes - send both states
   useEffect(() => {
@@ -716,9 +717,8 @@ export default function CanvasEditor({
           const textScale = element.width / 200
           const scaledFontSize = Math.max(8, Math.min(48, fontSize * textScale))
           return (
-            <div className="w-full h-full flex items-center justify-center p-2 overflow-hidden">
+            <div ref={textContentRef} className="w-full flex items-center justify-center p-2">
               <p
-                ref={textContentRef}
                 className="w-full leading-relaxed text-center break-words"
                 style={{ color: '#1a1a1a', fontSize: `${scaledFontSize}px`, fontFamily: `'${font}', cursive` }}
               >

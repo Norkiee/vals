@@ -86,7 +86,7 @@ export default function CreatePage() {
   }, [])
 
   const handleTemplateSelect = useCallback((template: Template) => {
-    setSelectedTemplateId(template.id)
+    setSelectedTemplateId(template.id || null)
     setTheme(template.theme)
     setPhotoStyle(template.photo_style as PhotoStyle)
     setFont(template.font_family)
@@ -650,7 +650,7 @@ export default function CreatePage() {
                 </div>
                 <button
                   onClick={handleShare}
-                  className="px-2 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="aspect-square py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
                   title="Share"
                 >
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

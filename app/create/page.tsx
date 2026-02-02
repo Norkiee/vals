@@ -91,10 +91,7 @@ export default function CreatePage() {
     setPhotoStyle(template.photo_style as PhotoStyle)
     setFont(template.font_family)
     setFontSize(template.font_size)
-    // Load the exact canvas positions from the template
-    if (template.canvas_layout) {
-      setCanvasState(template.canvas_layout)
-    }
+    setCanvasState(template.canvas_layout || { mobile: [], desktop: [] })
   }, [])
 
   // Fetch Spotify metadata when link changes

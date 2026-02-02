@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     url: "https://askcuter.xyz",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Ask Cuter - Create Your Valentine",
     description: "Create beautiful, shareable valentine cards with personalized messages, photos, and music.",
   },

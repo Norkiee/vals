@@ -45,6 +45,13 @@ export default function CreatePage() {
   // Email notification (optional)
   const [creatorEmail, setCreatorEmail] = useState('')
 
+  // Error state
+  const [formError, setFormError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [spotifyError, setSpotifyError] = useState<string | null>(null)
+  const [subdomainError, setSubdomainError] = useState<string | null>(null)
+  const [templateError, setTemplateError] = useState<string | null>(null)
+
   // Success modal
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [createdSubdomain, setCreatedSubdomain] = useState('')
@@ -71,7 +78,7 @@ export default function CreatePage() {
           handleTemplateSelect(data[0])
         }
       } catch {
-        // Templates are optional — form works without them
+        setTemplateError('Failed to load templates')
       }
     }
     fetchTemplates()
@@ -99,11 +106,16 @@ export default function CreatePage() {
 
     const fetchMeta = async () => {
       setLoadingSpotify(true)
+      setSpotifyError(null)
       try {
         const meta = await fetchSpotifyMetadata(spotifyLink)
+        if (!meta) {
+          setSpotifyError('Could not load Spotify metadata. Check the link.')
+        }
         setSpotifyMeta(meta)
       } catch {
         setSpotifyMeta(null)
+        setSpotifyError('Failed to fetch Spotify metadata')
       } finally {
         setLoadingSpotify(false)
       }
@@ -117,15 +129,24 @@ export default function CreatePage() {
   const checkSubdomain = useCallback(async (name: string) => {
     if (!name.trim()) {
       setSubdomainAvailable(null)
+      setSubdomainError(null)
       return
     }
 
     setCheckingSubdomain(true)
+    setSubdomainError(null)
     try {
       const response = await fetch(`/api/check-subdomain?subdomain=${generateSubdomain(name)}`)
+      if (!response.ok) {
+        const errData = await response.json().catch(() => null)
+        setSubdomainError(errData?.error || 'Failed to check subdomain availability')
+        setSubdomainAvailable(null)
+        return
+      }
       const data = await response.json()
       setSubdomainAvailable(data.available)
     } catch {
+      setSubdomainError('Failed to check subdomain availability')
       setSubdomainAvailable(null)
     } finally {
       setCheckingSubdomain(false)
@@ -140,9 +161,22 @@ export default function CreatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
+    setFieldErrors({})
 
-    if (!recipientName.trim() || photos.length === 0 || !creatorEmail.trim()) {
-      alert('Please add a recipient name, at least one photo, and your email')
+    // Client-side validation
+    const errors: Record<string, string> = {}
+    if (!recipientName.trim()) errors.recipientName = 'Recipient name is required'
+    if (photos.length === 0) errors.photos = 'At least one photo is required'
+    if (!creatorEmail.trim()) {
+      errors.creatorEmail = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(creatorEmail.trim())) {
+      errors.creatorEmail = 'Please enter a valid email address'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setFormError('Please fix the errors below')
       return
     }
 
@@ -164,18 +198,13 @@ export default function CreatePage() {
         creatorEmail: creatorEmail.trim() || null,
       }
 
-      console.log('Submitting valentine, photos:', photos.length, 'canvasState elements:', canvasState?.mobile?.length)
-
       let body: string
       try {
         body = JSON.stringify(payload)
-      } catch (jsonErr) {
-        console.error('JSON stringify failed:', jsonErr)
-        alert('Failed to serialize data. Please try again.')
+      } catch {
+        setFormError('Failed to serialize data. Please try again.')
         return
       }
-
-      console.log('Payload size:', (body.length / 1024 / 1024).toFixed(2), 'MB')
 
       const response = await fetch('/api/create-valentine', {
         method: 'POST',
@@ -184,9 +213,20 @@ export default function CreatePage() {
       })
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => null)
-        console.error('Create valentine error:', response.status, errData)
-        throw new Error(errData?.error || 'Failed to create valentine')
+        let errData: { error?: string; fieldErrors?: Record<string, string> } | null = null
+        try {
+          errData = await response.json()
+        } catch {
+          // Response wasn't JSON
+        }
+
+        if (errData?.fieldErrors) {
+          setFieldErrors(errData.fieldErrors)
+          setFormError(errData.error || 'Please fix the errors below')
+        } else {
+          setFormError(errData?.error || 'Failed to create valentine. Please try again.')
+        }
+        return
       }
 
       const data = await response.json()
@@ -194,7 +234,7 @@ export default function CreatePage() {
       setShowSuccessModal(true)
     } catch (error) {
       console.error('Error creating valentine:', error)
-      alert('Failed to create valentine. Please try again.')
+      setFormError('Failed to create valentine. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -257,6 +297,19 @@ export default function CreatePage() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Error banner */}
+            {formError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
+
+            {templateError && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 text-xs text-yellow-700">
+                {templateError}
+              </div>
+            )}
+
             {templates.length > 0 && (
               <TemplateSelector
                 templates={templates}
@@ -266,6 +319,9 @@ export default function CreatePage() {
             )}
 
             <PhotoUpload photos={photos} onPhotosChange={setPhotos} />
+            {fieldErrors.photos && (
+              <p className="text-xs text-red-500 -mt-2">{fieldErrors.photos}</p>
+            )}
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Their name</label>
@@ -296,6 +352,12 @@ export default function CreatePage() {
                   </div>
                 )}
               </div>
+              {fieldErrors.recipientName && (
+                <p className="text-xs text-red-500 mt-1">{fieldErrors.recipientName}</p>
+              )}
+              {subdomainError && (
+                <p className="text-xs text-red-500 mt-1">{subdomainError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -311,6 +373,9 @@ export default function CreatePage() {
               <p className="text-xs text-gray-400 text-right">
                 {message.length}/{MAX_MESSAGE_LENGTH}
               </p>
+              {fieldErrors.message && (
+                <p className="text-xs text-red-500">{fieldErrors.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -322,6 +387,9 @@ export default function CreatePage() {
                 placeholder="spotify.com/auysghaluk"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
               />
+              {(spotifyError || fieldErrors.spotifyLink) && (
+                <p className="text-xs text-red-500">{fieldErrors.spotifyLink || spotifyError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -335,6 +403,9 @@ export default function CreatePage() {
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
               />
               <p className="text-xs text-gray-400">Get notified when they respond</p>
+              {fieldErrors.creatorEmail && (
+                <p className="text-xs text-red-500">{fieldErrors.creatorEmail}</p>
+              )}
             </div>
 
             {/* Mobile preview toggle */}

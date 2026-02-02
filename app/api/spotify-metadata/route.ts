@@ -26,9 +26,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 })
   }
 
+  // Validate URL looks like a Spotify link
+  if (!/^https?:\/\/(open\.)?spotify\.com\/.+|^spotify:.+/.test(spotifyUrl)) {
+    return NextResponse.json({ error: 'Invalid Spotify URL format' }, { status: 400 })
+  }
+
   try {
     const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`
-    const response = await fetch(oembedUrl)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    const response = await fetch(oembedUrl, { signal: controller.signal })
+    clearTimeout(timeout)
 
     if (!response.ok) {
       return NextResponse.json({ error: 'Failed to fetch from Spotify' }, { status: response.status })
@@ -43,6 +51,9 @@ export async function GET(request: NextRequest) {
       thumbnail: data.thumbnail_url || null,
     })
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return NextResponse.json({ error: 'Spotify request timed out' }, { status: 504 })
+    }
     console.error('Error fetching Spotify metadata:', error)
     return NextResponse.json({ error: 'Failed to fetch metadata' }, { status: 500 })
   }

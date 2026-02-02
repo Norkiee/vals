@@ -19,7 +19,16 @@ export async function GET(
       .eq('subdomain', subdomain)
       .single()
 
-    if (valentineError || !valentine) {
+    if (valentineError) {
+      // PGRST116 = "not found" from PostgREST
+      if (valentineError.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Valentine not found' }, { status: 404 })
+      }
+      console.error('Database error fetching valentine:', valentineError)
+      return NextResponse.json({ error: 'Failed to load valentine' }, { status: 500 })
+    }
+
+    if (!valentine) {
       return NextResponse.json({ error: 'Valentine not found' }, { status: 404 })
     }
 
@@ -32,6 +41,11 @@ export async function GET(
 
     if (photosError) {
       console.error('Error fetching photos:', photosError)
+      return NextResponse.json({
+        ...valentine,
+        photos: [],
+        photosError: 'Failed to load photos',
+      })
     }
 
     return NextResponse.json({

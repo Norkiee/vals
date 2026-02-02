@@ -56,6 +56,7 @@ export default function ValentinePage() {
   const [error, setError] = useState<string | null>(null)
   const [responded, setResponded] = useState(false)
   const [response, setResponse] = useState<boolean | null>(null)
+  const [responseError, setResponseError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(true)
   const [scale, setScale] = useState(1)
   const [screenHeight, setScreenHeight] = useState(0)
@@ -104,9 +105,10 @@ export default function ValentinePage() {
 
   const handleResponse = async (answer: boolean) => {
     if (!valentine) return
+    setResponseError(null)
 
     try {
-      await fetch('/api/submit-response', {
+      const res = await fetch('/api/submit-response', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,10 +116,15 @@ export default function ValentinePage() {
           response: answer,
         }),
       })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null)
+        setResponseError(errData?.error || 'Failed to submit response. Please try again.')
+        return
+      }
       setResponse(answer)
       setResponded(true)
     } catch {
-      console.error('Failed to submit response')
+      setResponseError('Failed to submit response. Please check your connection and try again.')
     }
   }
 
@@ -137,7 +144,13 @@ export default function ValentinePage() {
       <div className="min-h-screen flex items-center justify-center bg-pink-100">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops!</h1>
-          <p className="text-gray-600">{error || 'Valentine not found'}</p>
+          <p className="text-gray-600 mb-4">{error || 'Valentine not found'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 transition-colors"
+          >
+            Try again
+          </button>
         </div>
       </div>
     )
@@ -272,30 +285,37 @@ export default function ValentinePage() {
           zIndex: element.zIndex,
         }}
       >
-        <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
-          <button
-            onClick={() => handleResponse(true)}
-            className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
-            style={{
-              backgroundColor: themeColors.primary,
-              fontSize: `${btnFontSize}px`,
-              padding: `${btnPaddingY}px ${btnPaddingX}px`,
-            }}
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => handleResponse(false)}
-            className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
-            style={{
-              borderColor: themeColors.primary,
-              color: themeColors.primary,
-              fontSize: `${btnFontSize}px`,
-              padding: `${btnPaddingY}px ${btnPaddingX}px`,
-            }}
-          >
-            No
-          </button>
+        <div className="flex flex-col items-center justify-center">
+          {responseError && (
+            <div className="bg-red-50 border border-red-200 rounded px-2 py-1 text-red-700 text-center mb-1" style={{ fontSize: `${Math.max(8, btnFontSize * 0.75)}px` }}>
+              {responseError}
+            </div>
+          )}
+          <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
+            <button
+              onClick={() => handleResponse(true)}
+              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
+              style={{
+                backgroundColor: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`,
+              }}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => handleResponse(false)}
+              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
+              style={{
+                borderColor: themeColors.primary,
+                color: themeColors.primary,
+                fontSize: `${btnFontSize}px`,
+                padding: `${btnPaddingY}px ${btnPaddingX}px`,
+              }}
+            >
+              No
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -574,6 +594,11 @@ export default function ValentinePage() {
 
           {/* Buttons */}
           <div className="mb-8">
+            {responseError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm text-red-700 text-center mb-3">
+                {responseError}
+              </div>
+            )}
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => handleResponse(true)}

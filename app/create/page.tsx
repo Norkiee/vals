@@ -66,6 +66,15 @@ export default function CreatePage() {
     }
   }, [user, senderName])
 
+  // Track page readiness (fonts + templates loaded)
+  const [fontsLoaded, setFontsLoaded] = useState(false)
+  const [templatesLoaded, setTemplatesLoaded] = useState(false)
+  const pageReady = fontsLoaded && templatesLoaded
+
+  useEffect(() => {
+    document.fonts.ready.then(() => setFontsLoaded(true))
+  }, [])
+
   // Fetch templates on mount
   useEffect(() => {
     async function fetchTemplates() {
@@ -79,6 +88,8 @@ export default function CreatePage() {
         }
       } catch {
         setTemplateError('Failed to load templates')
+      } finally {
+        setTemplatesLoaded(true)
       }
     }
     fetchTemplates()
@@ -285,12 +296,8 @@ export default function CreatePage() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" />
-      </div>
-    )
+  if (loading || !pageReady) {
+    return <div className="min-h-screen bg-[#fafafa]" />
   }
 
   if (isMobileOrTablet) {
@@ -320,7 +327,7 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="min-h-screen lg:h-screen lg:flex lg:overflow-hidden bg-[#fafafa]">
+    <main className="min-h-screen lg:h-screen lg:flex lg:overflow-hidden bg-[#fafafa] animate-fade-in">
       {/* Left side - Form (scrollable) */}
       <div className="w-full lg:w-[400px] xl:w-[450px] 2xl:w-[500px] bg-[#fafafa] flex-shrink-0 lg:h-screen lg:overflow-y-auto">
         <div className="px-4 sm:px-6 lg:px-10 xl:px-12 py-6 lg:py-8 max-w-lg mx-auto lg:max-w-none">

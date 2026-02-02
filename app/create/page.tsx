@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
@@ -279,10 +280,41 @@ export default function CreatePage() {
     }
   }
 
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobileOrTablet(window.innerWidth < 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" />
+      </div>
+    )
+  }
+
+  if (isMobileOrTablet) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          <Image
+            src="/icons/favicon.png"
+            alt="Ask Cuter"
+            width={80}
+            height={80}
+            className="mx-auto mb-6"
+          />
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            Desktop only for now
+          </h1>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            We&apos;re working on a mobile version. For now, please create your valentine on a desktop computer.
+          </p>
+        </div>
       </div>
     )
   }

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
-import Image from 'next/image'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PhotoUpload from '@/components/PhotoUpload'
 import ColorPicker from '@/components/ColorPicker'
@@ -301,7 +300,8 @@ export default function CreatePage() {
     return (
       <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/icons/favicon.png"
             alt="Ask Cuter"
             width={80}

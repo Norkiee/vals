@@ -6,27 +6,28 @@ import Image from 'next/image'
 
 export default function Home() {
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const check = () => setIsMobileOrTablet(window.innerWidth < 1024)
     check()
-    setMounted(true)
     window.addEventListener('resize', check)
+
+    // Wait for Loveheart font to load before showing content
+    document.fonts.ready.then(() => {
+      setReady(true)
+    })
+
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-[#faf5f0] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" />
-      </div>
-    )
+  if (!ready) {
+    return <div className="min-h-screen bg-[#faf5f0]" />
   }
 
   if (isMobileOrTablet) {
     return (
-      <div className="min-h-screen bg-[#faf5f0] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#faf5f0] flex items-center justify-center px-6 animate-fade-in">
         <div className="text-center max-w-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -51,7 +52,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
+    <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4 animate-fade-in">
       {/* Photos arrangement */}
       <div className="relative w-full max-w-xl h-72 md:h-96 -mb-24">
         {/* Left photo */}

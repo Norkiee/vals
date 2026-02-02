@@ -195,10 +195,10 @@ export default function CanvasEditor({
       isInternalUpdateRef.current = false
       return
     }
-    if (canvasState?.mobile && canvasState.mobile.length > 0) {
+    if (canvasState?.mobile) {
       setMobileElements(canvasState.mobile)
     }
-    if (canvasState?.desktop && canvasState.desktop.length > 0) {
+    if (canvasState?.desktop) {
       setDesktopElements(canvasState.desktop)
     }
   }, [canvasState])

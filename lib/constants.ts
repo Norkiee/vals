@@ -46,7 +46,7 @@ export const PHOTO_STYLES = ['polaroid', 'hearts'] as const
 export type PhotoStyle = (typeof PHOTO_STYLES)[number]
 
 export const MAX_PHOTOS = 10
-export const MAX_MESSAGE_LENGTH = 500
+export const MAX_MESSAGE_LENGTH = 250
 export const MAX_NAME_LENGTH = 50
 
 export const SECTION_TYPES = ['photos', 'message', 'spotify'] as const

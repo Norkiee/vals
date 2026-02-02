@@ -629,7 +629,6 @@ export default function CreatePage() {
 
             {/* Share Link */}
             <div className="text-left mb-4">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Share this link</p>
               <div className="flex gap-2">
                 <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 flex items-center">
                   <p className="text-red-600 font-medium text-sm truncate">{valentineUrl}</p>

@@ -11,27 +11,50 @@ interface PhotoUploadProps {
 
 export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: PhotoUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const handleFileChange = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
 
     const remainingSlots = maxPhotos - photos.length
-    const filesToRead = Array.from(files)
+    const filesToUpload = Array.from(files)
       .slice(0, remainingSlots)
       .filter((f) => f.type.startsWith('image/'))
 
-    const readPromises = filesToRead.map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = (e) => resolve(e.target?.result as string)
-          reader.onerror = () => reject(new Error('Failed to read file'))
-          reader.readAsDataURL(file)
-        })
-    )
+    if (filesToUpload.length === 0) return
 
-    const newPhotos = await Promise.all(readPromises)
-    onPhotosChange([...photos, ...newPhotos])
+    setUploading(true)
+    const uploadedUrls: string[] = []
+
+    for (const file of filesToUpload) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('valentineId', 'temp')
+
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!res.ok) {
+          console.error('Failed to upload photo:', await res.text())
+          continue
+        }
+
+        const data = await res.json()
+        if (data.url) {
+          uploadedUrls.push(data.url)
+        }
+      } catch (err) {
+        console.error('Error uploading photo:', err)
+      }
+    }
+
+    if (uploadedUrls.length > 0) {
+      onPhotosChange([...photos, ...uploadedUrls])
+    }
+    setUploading(false)
   }, [photos, onPhotosChange, maxPhotos])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -80,9 +103,13 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
                 e.target.value = '' // Reset input to allow selecting more files
               }}
             />
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            {uploading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
+            ) : (
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            )}
           </label>
         )}
 

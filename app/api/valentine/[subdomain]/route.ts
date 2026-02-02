@@ -48,9 +48,18 @@ export async function GET(
       })
     }
 
+    // Fetch existing response
+    const { data: existingResponse } = await supabase
+      .from('valentine_responses')
+      .select('response')
+      .eq('valentine_id', valentine.id)
+      .limit(1)
+      .single()
+
     return NextResponse.json({
       ...valentine,
       photos: photos || [],
+      existing_response: existingResponse ? existingResponse.response : null,
     })
   } catch (error) {
     console.error('Error fetching valentine:', error)

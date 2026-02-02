@@ -93,6 +93,10 @@ export default function ValentinePage() {
         }
         const data = await res.json()
         setValentine(data)
+        if (data.existing_response !== null && data.existing_response !== undefined) {
+          setResponse(data.existing_response)
+          setResponded(true)
+        }
       } catch {
         setError('Failed to load valentine')
       } finally {

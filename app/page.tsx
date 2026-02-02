@@ -1,9 +1,52 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function Home() {
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobileOrTablet(window.innerWidth < 1024)
+    check()
+    setMounted(true)
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#faf5f0] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" />
+      </div>
+    )
+  }
+
+  if (isMobileOrTablet) {
+    return (
+      <div className="min-h-screen bg-[#faf5f0] flex items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/favicon.png"
+            alt="Ask Cuter"
+            width={80}
+            height={80}
+            className="mx-auto mb-6"
+          />
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            Desktop only for now
+          </h1>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            We&apos;re working on a mobile version. For now, please visit on a desktop computer to create your valentine.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-[#faf5f0] flex flex-col items-center justify-center relative overflow-hidden px-4">
       {/* Photos arrangement */}

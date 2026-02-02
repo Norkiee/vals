@@ -12,6 +12,7 @@ interface PhotoUploadProps {
 export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: PhotoUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleFileChange = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -24,7 +25,9 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
     if (filesToUpload.length === 0) return
 
     setUploading(true)
+    setUploadError(null)
     const uploadedUrls: string[] = []
+    let failCount = 0
 
     for (const file of filesToUpload) {
       try {
@@ -38,7 +41,9 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
         })
 
         if (!res.ok) {
-          console.error('Failed to upload photo:', await res.text())
+          failCount++
+          const errData = await res.json().catch(() => null)
+          console.error('Failed to upload photo:', errData?.error || res.statusText)
           continue
         }
 
@@ -47,8 +52,17 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
           uploadedUrls.push(data.url)
         }
       } catch (err) {
+        failCount++
         console.error('Error uploading photo:', err)
       }
+    }
+
+    if (failCount > 0) {
+      setUploadError(
+        failCount === filesToUpload.length
+          ? 'Upload failed. Please try again.'
+          : `${failCount} photo${failCount > 1 ? 's' : ''} failed to upload.`
+      )
     }
 
     if (uploadedUrls.length > 0) {
@@ -136,6 +150,10 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
           </div>
         ))}
       </div>
+
+      {uploadError && (
+        <p className="text-xs text-red-500">{uploadError}</p>
+      )}
 
       <p className="text-xs text-gray-500">
         {photos.length}/{maxPhotos} photos

@@ -306,13 +306,16 @@ export default function CreatePage() {
             alt="Ask Cuter"
             width={80}
             height={80}
-            className="mx-auto mb-6"
+            className="mx-auto mb-6 rounded-2xl"
           />
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Desktop only for now
+          <h1 className="text-xl font-semibold text-gray-900 mb-3">
+            Hey! 👋
           </h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-4">
+            We&apos;d love to help you create a valentine, but our canvas editor is built for desktop right now.
+          </p>
           <p className="text-gray-500 text-sm leading-relaxed">
-            We&apos;re working on a mobile version. For now, please create your valentine on a desktop computer.
+            📌 Bookmark this and create on your laptop/desktop!
           </p>
         </div>
       </div>

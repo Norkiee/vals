@@ -272,47 +272,31 @@ export default function ValentinePage() {
           zIndex: element.zIndex,
         }}
       >
-        {!responded ? (
-          <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
-            <button
-              onClick={() => handleResponse(true)}
-              className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
-              style={{
-                backgroundColor: themeColors.primary,
-                fontSize: `${btnFontSize}px`,
-                padding: `${btnPaddingY}px ${btnPaddingX}px`,
-              }}
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => handleResponse(false)}
-              className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
-              style={{
-                borderColor: themeColors.primary,
-                color: themeColors.primary,
-                fontSize: `${btnFontSize}px`,
-                padding: `${btnPaddingY}px ${btnPaddingX}px`,
-              }}
-            >
-              No
-            </button>
-          </div>
-        ) : (
-          <div className="text-center bg-white/80 rounded-xl p-3 shadow-md">
-            {response ? (
-              <>
-                <span className="text-xl mb-1 block">💕</span>
-                <p style={{ fontFamily, fontSize: `${btnFontSize}px` }} className="text-gray-800">Yay!</p>
-              </>
-            ) : (
-              <>
-                <span className="text-xl mb-1 block">💔</span>
-                <p style={{ fontFamily, fontSize: `${btnFontSize}px` }} className="text-gray-800">Maybe next time</p>
-              </>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-center" style={{ gap: `${btnGap}px` }}>
+          <button
+            onClick={() => handleResponse(true)}
+            className="rounded-full text-white font-medium shadow-md hover:shadow-lg transition-all"
+            style={{
+              backgroundColor: themeColors.primary,
+              fontSize: `${btnFontSize}px`,
+              padding: `${btnPaddingY}px ${btnPaddingX}px`,
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => handleResponse(false)}
+            className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
+            style={{
+              borderColor: themeColors.primary,
+              color: themeColors.primary,
+              fontSize: `${btnFontSize}px`,
+              padding: `${btnPaddingY}px ${btnPaddingX}px`,
+            }}
+          >
+            No
+          </button>
+        </div>
       </div>
     )
   }
@@ -403,6 +387,87 @@ export default function ValentinePage() {
     }
   }
 
+  // Full-page response screen — centered feedback + spotify only
+  if (responded) {
+    return (
+      <main
+        className="w-screen h-screen overflow-hidden flex items-center justify-center relative"
+        style={{ backgroundColor: themeColors.bgColor }}
+      >
+        {/* Background hearts */}
+        {[
+          { left: '5%',  top: '8%',  size: 24, duration: 7,   delay: 0 },
+          { left: '88%', top: '5%',  size: 20, duration: 9,   delay: 1.5 },
+          { left: '15%', top: '22%', size: 28, duration: 8,   delay: 0.8 },
+          { left: '75%', top: '18%', size: 18, duration: 10,  delay: 3.2 },
+          { left: '45%', top: '12%', size: 22, duration: 11,  delay: 2.1 },
+          { left: '92%', top: '35%', size: 26, duration: 7.5, delay: 0.3 },
+          { left: '3%',  top: '45%', size: 20, duration: 9.5, delay: 4 },
+          { left: '55%', top: '40%', size: 30, duration: 8,   delay: 1.8 },
+          { left: '30%', top: '55%', size: 22, duration: 10,  delay: 2.5 },
+          { left: '82%', top: '52%', size: 24, duration: 6.5, delay: 0.6 },
+          { left: '10%', top: '68%', size: 28, duration: 8.5, delay: 3.5 },
+          { left: '65%', top: '65%', size: 20, duration: 11,  delay: 1.2 },
+          { left: '40%', top: '78%', size: 26, duration: 7,   delay: 4.5 },
+          { left: '90%', top: '75%', size: 18, duration: 9,   delay: 2.8 },
+          { left: '20%', top: '88%', size: 24, duration: 10,  delay: 0.9 },
+          { left: '70%', top: '85%', size: 22, duration: 8,   delay: 3.8 },
+          { left: '50%', top: '92%', size: 28, duration: 7.5, delay: 1.6 },
+        ].map((heart, i) => (
+          <span
+            key={`heart-${i}`}
+            className="absolute animate-heart-drift"
+            style={{
+              left: heart.left,
+              top: heart.top,
+              fontSize: heart.size,
+              animationDuration: `${heart.duration}s`,
+              animationDelay: `${heart.delay}s`,
+              color: themeColors.primary,
+              opacity: 0.25,
+              zIndex: 0,
+            }}
+          >
+            ♥
+          </span>
+        ))}
+
+        <div className="relative z-10 flex flex-col items-center gap-8 px-6">
+          {/* Feedback */}
+          <div className="text-center animate-float-simple">
+            <div className="bg-white/80 rounded-2xl p-8 shadow-lg">
+              {response ? (
+                <>
+                  <span className="text-6xl mb-3 block">💕</span>
+                  <p className="text-2xl text-gray-800" style={{ fontFamily }}>Yay! That&apos;s amazing!</p>
+                </>
+              ) : (
+                <>
+                  <span className="text-6xl mb-3 block">💔</span>
+                  <p className="text-2xl text-gray-800" style={{ fontFamily }}>Maybe next time...</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Spotify */}
+          {valentine.spotify_link && (
+            <div className="w-full max-w-xs animate-float-simple-delayed">
+              <SpotifyCard
+                spotifyLink={valentine.spotify_link}
+                title={valentine.spotify_title || undefined}
+                artist={valentine.spotify_artist || undefined}
+                thumbnail={valentine.spotify_thumbnail}
+                themeColor={themeColors.primary}
+                compact={false}
+              />
+            </div>
+          )}
+        </div>
+      </main>
+    )
+  }
+
   // Scattered hearts across the full page
   const scatteredHearts = [
     { left: '5%',  top: '8%',  size: 24, duration: 7,   delay: 0 },
@@ -444,7 +509,7 @@ export default function ValentinePage() {
               animationDuration: `${heart.duration}s`,
               animationDelay: `${heart.delay}s`,
               color: themeColors.primary,
-              opacity: 0.15,
+              opacity: 0.25,
               zIndex: 0,
             }}
           >
@@ -509,49 +574,31 @@ export default function ValentinePage() {
 
           {/* Buttons */}
           <div className="mb-8">
-            {!responded ? (
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => handleResponse(true)}
-                  className="rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all"
-                  style={{
-                    backgroundColor: themeColors.primary,
-                    fontSize: `clamp(14px, 2vw + 8px, 20px)`,
-                    padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
-                  }}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => handleResponse(false)}
-                  className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
-                  style={{
-                    borderColor: themeColors.primary,
-                    color: themeColors.primary,
-                    fontSize: `clamp(14px, 2vw + 8px, 20px)`,
-                    padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
-                  }}
-                >
-                  No
-                </button>
-              </div>
-            ) : (
-              <div className="text-center">
-                <div className="bg-white/80 rounded-2xl p-6 shadow-lg inline-block">
-                  {response ? (
-                    <>
-                      <span className="text-4xl mb-2 block">💕</span>
-                      <p className="text-gray-800" style={{ fontFamily, fontSize: `clamp(18px, 3vw + 8px, 28px)` }}>Yay! That&apos;s amazing!</p>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-4xl mb-2 block">💔</span>
-                      <p className="text-gray-800" style={{ fontFamily, fontSize: `clamp(18px, 3vw + 8px, 28px)` }}>Maybe next time...</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => handleResponse(true)}
+                className="rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                style={{
+                  backgroundColor: themeColors.primary,
+                  fontSize: `clamp(14px, 2vw + 8px, 20px)`,
+                  padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
+                }}
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => handleResponse(false)}
+                className="rounded-full border-2 font-medium hover:bg-white/50 transition-all"
+                style={{
+                  borderColor: themeColors.primary,
+                  color: themeColors.primary,
+                  fontSize: `clamp(14px, 2vw + 8px, 20px)`,
+                  padding: `clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 44px)`,
+                }}
+              >
+                No
+              </button>
+            </div>
           </div>
 
           {/* Spotify */}
@@ -596,7 +643,7 @@ export default function ValentinePage() {
             animationDuration: `${heart.duration}s`,
             animationDelay: `${heart.delay}s`,
             color: themeColors.primary,
-            opacity: 0.15,
+            opacity: 0.25,
             zIndex: 0,
           }}
         >

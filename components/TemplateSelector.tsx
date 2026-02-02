@@ -89,7 +89,7 @@ export default function TemplateSelector({ templates, selectedId, onSelect }: Te
                     description: '',
                     theme: 'pink',
                     photo_style: 'polaroid',
-                    font_family: 'default',
+                    font_family: 'Loveheart',
                     font_size: 16,
                     canvas_layout: null,
                     placeholder_count: 0,

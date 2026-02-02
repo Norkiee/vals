@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { sendResponseNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,11 +71,13 @@ export async function POST(request: NextRequest) {
       .eq('id', valentineId)
       .single()
 
-    // TODO: Send email notification if creator_email exists
-    // This would integrate with a service like SendGrid, Resend, or Supabase Edge Functions
     if (valentineDetails?.creator_email) {
-      console.log(`Email notification would be sent to: ${valentineDetails.creator_email}`)
-      // await sendNotificationEmail(valentineDetails.creator_email, valentineDetails.recipient_name, response)
+      await sendResponseNotification(
+        valentineDetails.creator_email,
+        valentineDetails.recipient_name,
+        valentineDetails.sender_name,
+        response
+      )
     }
 
     return NextResponse.json({ success: true })

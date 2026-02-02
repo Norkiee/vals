@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { generateSubdomain, generateAdminToken } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid'
+import { FONTS, PHOTO_STYLES, THEMES, MAX_NAME_LENGTH, MAX_MESSAGE_LENGTH } from '@/lib/constants'
+
+const VALID_THEMES = Object.keys(THEMES)
+const VALID_PHOTO_STYLES = [...PHOTO_STYLES]
+const VALID_FONT_NAMES = FONTS.map(f => f.name)
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const SPOTIFY_URL_REGEX = /^https?:\/\/(open\.)?spotify\.com\/.+|^spotify:.+/
 
 /**
  * Parses Spotify oEmbed title format: "Song Name by Artist on Spotify"
@@ -70,13 +77,53 @@ export async function POST(request: NextRequest) {
       creatorEmail,
     } = body
 
-    // Validate required fields
+    // Validate required fields with specific error messages
+    const fieldErrors: Record<string, string> = {}
+
     if (!recipientName?.trim()) {
-      return NextResponse.json({ error: 'Recipient name is required' }, { status: 400 })
+      fieldErrors.recipientName = 'Recipient name is required'
+    } else if (recipientName.trim().length > MAX_NAME_LENGTH) {
+      fieldErrors.recipientName = `Recipient name must be ${MAX_NAME_LENGTH} characters or less`
+    }
+
+    if (senderName && senderName.trim().length > MAX_NAME_LENGTH) {
+      fieldErrors.senderName = `Sender name must be ${MAX_NAME_LENGTH} characters or less`
+    }
+
+    if (message && message.trim().length > MAX_MESSAGE_LENGTH) {
+      fieldErrors.message = `Message must be ${MAX_MESSAGE_LENGTH} characters or less`
+    }
+
+    if (creatorEmail && !EMAIL_REGEX.test(creatorEmail.trim())) {
+      fieldErrors.creatorEmail = 'Please enter a valid email address'
+    }
+
+    if (theme && !VALID_THEMES.includes(theme)) {
+      fieldErrors.theme = `Invalid theme. Must be one of: ${VALID_THEMES.join(', ')}`
+    }
+
+    if (photoStyle && !VALID_PHOTO_STYLES.includes(photoStyle)) {
+      fieldErrors.photoStyle = `Invalid photo style. Must be one of: ${VALID_PHOTO_STYLES.join(', ')}`
+    }
+
+    if (font && !VALID_FONT_NAMES.includes(font)) {
+      fieldErrors.font = `Invalid font. Must be one of: ${VALID_FONT_NAMES.join(', ')}`
+    }
+
+    if (fontSize !== undefined && (typeof fontSize !== 'number' || fontSize < 8 || fontSize > 48)) {
+      fieldErrors.fontSize = 'Font size must be a number between 8 and 48'
+    }
+
+    if (spotifyLink?.trim() && !SPOTIFY_URL_REGEX.test(spotifyLink.trim())) {
+      fieldErrors.spotifyLink = 'Invalid Spotify link format'
     }
 
     if (!photos?.length) {
-      return NextResponse.json({ error: 'At least one photo is required' }, { status: 400 })
+      fieldErrors.photos = 'At least one photo is required'
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return NextResponse.json({ error: 'Validation failed', fieldErrors }, { status: 400 })
     }
 
     // Generate subdomain
@@ -140,6 +187,7 @@ export async function POST(request: NextRequest) {
 
     // Upload photos and create photo records
     const photoRecords = []
+    let failedUploads = 0
 
     for (let i = 0; i < photos.length; i++) {
       const photoData = photos[i]
@@ -162,6 +210,7 @@ export async function POST(request: NextRequest) {
 
         if (uploadError) {
           console.error('Error uploading photo:', uploadError)
+          failedUploads++
           continue
         }
 
@@ -199,6 +248,7 @@ export async function POST(request: NextRequest) {
       subdomain,
       id: valentineId,
       adminToken,
+      ...(failedUploads > 0 && { failedUploads }),
     })
   } catch (error) {
     console.error('Error creating valentine:', error)

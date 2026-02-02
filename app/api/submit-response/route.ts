@@ -13,6 +13,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (typeof response !== 'boolean') {
+      return NextResponse.json(
+        { error: 'Response must be true or false' },
+        { status: 400 }
+      )
+    }
+
+    // Verify valentine exists
+    const { data: valentine, error: valentineError } = await supabase
+      .from('valentines')
+      .select('id')
+      .eq('id', valentineId)
+      .single()
+
+    if (valentineError || !valentine) {
+      return NextResponse.json(
+        { error: 'Valentine not found' },
+        { status: 404 }
+      )
+    }
+
     // Check for existing response (prevent duplicates)
     const { data: existingResponse } = await supabase
       .from('valentine_responses')
@@ -43,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get valentine details for potential email notification
-    const { data: valentine } = await supabase
+    const { data: valentineDetails } = await supabase
       .from('valentines')
       .select('creator_email, sender_name, recipient_name')
       .eq('id', valentineId)
@@ -51,9 +72,9 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send email notification if creator_email exists
     // This would integrate with a service like SendGrid, Resend, or Supabase Edge Functions
-    if (valentine?.creator_email) {
-      console.log(`Email notification would be sent to: ${valentine.creator_email}`)
-      // await sendNotificationEmail(valentine.creator_email, valentine.recipient_name, response)
+    if (valentineDetails?.creator_email) {
+      console.log(`Email notification would be sent to: ${valentineDetails.creator_email}`)
+      // await sendNotificationEmail(valentineDetails.creator_email, valentineDetails.recipient_name, response)
     }
 
     return NextResponse.json({ success: true })

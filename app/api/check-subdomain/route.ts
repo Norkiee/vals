@@ -9,6 +9,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Subdomain is required' }, { status: 400 })
   }
 
+  // Validate subdomain format: alphanumeric and hyphens only, 1-63 chars
+  if (!/^[a-z0-9][a-z0-9-]{0,62}$/i.test(subdomain)) {
+    return NextResponse.json(
+      { error: 'Subdomain must contain only letters, numbers, and hyphens (max 63 characters)' },
+      { status: 400 }
+    )
+  }
+
   try {
     const { data, error } = await supabase
       .from('valentines')

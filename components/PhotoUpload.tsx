@@ -3,6 +3,44 @@
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
 
+const MAX_DIMENSION = 1600
+const CLIENT_QUALITY = 0.8
+const MAX_UPLOAD_SIZE = 4 * 1024 * 1024 // 4MB target to stay under Vercel's 4.5MB limit
+
+function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { width, height } = img
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        const scale = MAX_DIMENSION / Math.max(width, height)
+        width = Math.round(width * scale)
+        height = Math.round(height * scale)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob)
+          else reject(new Error('Canvas compression failed'))
+        },
+        'image/jpeg',
+        CLIENT_QUALITY
+      )
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Failed to load image'))
+    }
+    img.src = url
+  })
+}
+
 interface PhotoUploadProps {
   photos: string[]
   onPhotosChange: (photos: string[]) => void
@@ -31,8 +69,13 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
 
     for (const file of filesToUpload) {
       try {
+        let uploadBlob: Blob = file
+        if (file.size > MAX_UPLOAD_SIZE) {
+          uploadBlob = await compressImage(file)
+        }
+
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', uploadBlob, file.name)
         formData.append('valentineId', 'temp')
 
         const res = await fetch('/api/upload-photo', {

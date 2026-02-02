@@ -13,23 +13,24 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 10 }: 
   const [isDragging, setIsDragging] = useState(false)
 
   const handleFileChange = useCallback(async (files: FileList | null) => {
-    if (!files) return
+    if (!files || files.length === 0) return
 
-    const newPhotos: string[] = []
     const remainingSlots = maxPhotos - photos.length
+    const filesToRead = Array.from(files)
+      .slice(0, remainingSlots)
+      .filter((f) => f.type.startsWith('image/'))
 
-    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-      const file = files[i]
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        const dataUrl = await new Promise<string>((resolve) => {
+    const readPromises = filesToRead.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
           reader.onload = (e) => resolve(e.target?.result as string)
+          reader.onerror = () => reject(new Error('Failed to read file'))
           reader.readAsDataURL(file)
         })
-        newPhotos.push(dataUrl)
-      }
-    }
+    )
 
+    const newPhotos = await Promise.all(readPromises)
     onPhotosChange([...photos, ...newPhotos])
   }, [photos, onPhotosChange, maxPhotos])
 

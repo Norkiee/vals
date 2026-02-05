@@ -3,8 +3,10 @@ import { supabase } from '@/lib/supabase'
 import { generateSubdomain, generateAdminToken } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { FONTS, PHOTO_STYLES, THEMES, MAX_NAME_LENGTH, MAX_MESSAGE_LENGTH } from '@/lib/constants'
-
 import { scrapeMusicMetadata } from '@/lib/music'
+
+// Force Node.js runtime (required for Buffer API)
+export const runtime = 'nodejs'
 
 const VALID_THEMES = Object.keys(THEMES)
 const VALID_PHOTO_STYLES = [...PHOTO_STYLES]
@@ -211,6 +213,13 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error creating valentine:', error)
-    return NextResponse.json({ error: 'Failed to create valentine' }, { status: 500 })
+    // Log detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error('Error details:', { errorMessage, errorStack })
+    return NextResponse.json({
+      error: 'Failed to create valentine',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 })
   }
 }

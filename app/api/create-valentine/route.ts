@@ -18,6 +18,7 @@ const MUSIC_URL_REGEX = /^https?:\/\/.+/
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[CREATE] Step 1: Parsing request body')
     const body = await request.json()
     const {
       recipientName,
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
       userId,
       creatorEmail,
     } = body
+    console.log('[CREATE] Step 2: Body parsed, validating fields')
 
     // Validate required fields with specific error messages
     const fieldErrors: Record<string, string> = {}
@@ -83,10 +85,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', fieldErrors }, { status: 400 })
     }
 
+    console.log('[CREATE] Step 3: Validation passed, generating subdomain')
     // Generate subdomain
     let subdomain = generateSubdomain(recipientName)
 
     // Check if subdomain exists and make it unique if needed
+    console.log('[CREATE] Step 4: Checking subdomain availability')
     const { data: existing } = await supabase
       .from('valentines')
       .select('subdomain')
@@ -98,6 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create valentine record
+    console.log('[CREATE] Step 5: Generating IDs and tokens')
     const valentineId = uuidv4()
     const adminToken = generateAdminToken()
 
@@ -122,6 +127,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('[CREATE] Step 6: Inserting valentine record into database')
     const { error: valentineError } = await supabase
       .from('valentines')
       .insert({
@@ -147,10 +153,11 @@ export async function POST(request: NextRequest) {
       })
 
     if (valentineError) {
-      console.error('Error creating valentine:', valentineError)
-      return NextResponse.json({ error: 'Failed to create valentine' }, { status: 500 })
+      console.error('[CREATE] Database insert error:', valentineError)
+      return NextResponse.json({ error: 'Failed to create valentine', details: valentineError.message }, { status: 500 })
     }
 
+    console.log('[CREATE] Step 7: Valentine record created, uploading photos')
     // Upload photos and create photo records
     const photoRecords = []
     let failedUploads = 0
@@ -224,7 +231,8 @@ export async function POST(request: NextRequest) {
     console.error('Error details:', { errorMessage, errorStack })
     return NextResponse.json({
       error: 'Failed to create valentine',
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      details: errorMessage, // Temporarily expose in production for debugging
+      stack: errorStack?.split('\n').slice(0, 5).join('\n') // First 5 lines of stack
     }, { status: 500 })
   }
 }

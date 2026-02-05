@@ -4,60 +4,15 @@ import { generateSubdomain, generateAdminToken } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { FONTS, PHOTO_STYLES, THEMES, MAX_NAME_LENGTH, MAX_MESSAGE_LENGTH } from '@/lib/constants'
 
+import { scrapeMusicMetadata } from '@/lib/music'
+
 const VALID_THEMES = Object.keys(THEMES)
 const VALID_PHOTO_STYLES = [...PHOTO_STYLES]
 const VALID_FONT_NAMES = FONTS.map(f => f.name)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const SPOTIFY_URL_REGEX = /^https?:\/\/(open\.)?spotify\.com\/.+|^spotify:.+/
+// Allow any http/https URL for music
+const MUSIC_URL_REGEX = /^https?:\/\/.+/
 
-/**
- * Parses Spotify oEmbed title format: "Song Name by Artist on Spotify"
- */
-function parseSpotifyTitle(fullTitle: string): { title: string; artist: string } {
-  let cleaned = fullTitle.replace(/ on Spotify$/i, '')
-  const byIndex = cleaned.lastIndexOf(' by ')
-  if (byIndex > 0) {
-    return {
-      title: cleaned.substring(0, byIndex).trim(),
-      artist: cleaned.substring(byIndex + 4).trim(),
-    }
-  }
-  return {
-    title: cleaned || 'Unknown Title',
-    artist: 'Unknown Artist',
-  }
-}
-
-/**
- * Fetches Spotify metadata directly from oEmbed API (server-side)
- */
-async function fetchSpotifyMetadataServer(spotifyUrl: string): Promise<{
-  title: string
-  artist: string
-  thumbnail: string | null
-} | null> {
-  try {
-    const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`
-    const response = await fetch(oembedUrl)
-
-    if (!response.ok) {
-      console.error('Spotify oEmbed failed:', response.status)
-      return null
-    }
-
-    const data = await response.json()
-    const { title, artist } = parseSpotifyTitle(data.title || '')
-
-    return {
-      title,
-      artist,
-      thumbnail: data.thumbnail_url || null,
-    }
-  } catch (error) {
-    console.error('Error fetching Spotify metadata:', error)
-    return null
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -114,8 +69,8 @@ export async function POST(request: NextRequest) {
       fieldErrors.fontSize = 'Font size must be a number between 8 and 48'
     }
 
-    if (spotifyLink?.trim() && !SPOTIFY_URL_REGEX.test(spotifyLink.trim())) {
-      fieldErrors.spotifyLink = 'Invalid Spotify link format'
+    if (spotifyLink?.trim() && !MUSIC_URL_REGEX.test(spotifyLink.trim())) {
+      fieldErrors.spotifyLink = 'Invalid link format'
     }
 
     if (!photos?.length) {
@@ -144,17 +99,19 @@ export async function POST(request: NextRequest) {
     const valentineId = uuidv4()
     const adminToken = generateAdminToken()
 
-    // Fetch Spotify metadata if link provided
+    // Fetch Music metadata if link provided
     let spotifyTitle: string | null = null
     let spotifyArtist: string | null = null
     let spotifyThumbnail: string | null = null
+    let musicPreviewUrl: string | null = null
 
     if (spotifyLink?.trim()) {
-      const metadata = await fetchSpotifyMetadataServer(spotifyLink.trim())
+      const metadata = await scrapeMusicMetadata(spotifyLink.trim())
       if (metadata) {
         spotifyTitle = metadata.title
         spotifyArtist = metadata.artist
         spotifyThumbnail = metadata.thumbnail
+        musicPreviewUrl = metadata.previewUrl
       }
     }
 
@@ -163,6 +120,7 @@ export async function POST(request: NextRequest) {
       .insert({
         id: valentineId,
         subdomain,
+        name: recipientName.trim(), // Map recipientName to name column
         admin_token: adminToken,
         creator_email: creatorEmail?.trim() || null,
         sender_name: senderName?.trim() || 'Someone special',
@@ -172,6 +130,7 @@ export async function POST(request: NextRequest) {
         spotify_title: spotifyTitle,
         spotify_artist: spotifyArtist,
         spotify_thumbnail: spotifyThumbnail,
+        music_preview_url: musicPreviewUrl,
         theme: theme || 'pink',
         photo_style: photoStyle || 'polaroid',
         font_family: font || 'Loveheart',

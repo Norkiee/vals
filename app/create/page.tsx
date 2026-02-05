@@ -11,7 +11,7 @@ import TemplateSelector, { Template } from '@/components/TemplateSelector'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeKey, PhotoStyle, FONTS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
 import { generateSubdomain } from '@/lib/utils'
-import { fetchSpotifyMetadata, SpotifyMetadata } from '@/lib/spotify'
+import { fetchMusicMetadata, MusicMetadata } from '@/lib/music'
 
 export default function CreatePage() {
   const router = useRouter()
@@ -30,7 +30,7 @@ export default function CreatePage() {
   const [fontSize, setFontSize] = useState<number>(16)
   const [canvasState, setCanvasState] = useState<CanvasState>({ mobile: [], desktop: [] })
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
-  const [spotifyMeta, setSpotifyMeta] = useState<SpotifyMetadata | null>(null)
+  const [spotifyMeta, setSpotifyMeta] = useState<MusicMetadata | null>(null)
   const [loadingSpotify, setLoadingSpotify] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
 
@@ -93,7 +93,7 @@ export default function CreatePage() {
       }
     }
     fetchTemplates()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleTemplateSelect = useCallback((template: Template) => {
@@ -116,14 +116,14 @@ export default function CreatePage() {
       setLoadingSpotify(true)
       setSpotifyError(null)
       try {
-        const meta = await fetchSpotifyMetadata(spotifyLink)
+        const meta = await fetchMusicMetadata(spotifyLink)
         if (!meta) {
-          setSpotifyError('Could not load Spotify metadata. Check the link.')
+          setSpotifyError('Could not load music metadata. Check the link.')
         }
         setSpotifyMeta(meta)
       } catch {
         setSpotifyMeta(null)
-        setSpotifyError('Failed to fetch Spotify metadata')
+        setSpotifyError('Failed to fetch music metadata')
       } finally {
         setLoadingSpotify(false)
       }
@@ -418,12 +418,12 @@ export default function CreatePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Spotify link</label>
+              <label className="block text-sm font-medium text-gray-700">Music link</label>
               <input
                 type="text"
                 value={spotifyLink}
                 onChange={(e) => setSpotifyLink(e.target.value)}
-                placeholder="spotify.com/auysghaluk"
+                placeholder="Spotify, Apple Music, etc."
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
               />
               {(spotifyError || fieldErrors.spotifyLink) && (

@@ -4,8 +4,10 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
-import SpotifyCard from '@/components/SpotifyCard'
-import { getSpotifyOpenUrl } from '@/lib/spotify'
+import MusicCard from '@/components/MusicCard'
+import MusicPlayer from '@/components/MusicPlayer'
+import { getMusicOpenUrl, getMusicProvider, getProviderName } from '@/lib/music'
+import PlatformIcon from '@/components/PlatformIcon'
 
 interface CanvasElement {
   id: string
@@ -34,6 +36,7 @@ interface ValentineData {
   spotify_title: string | null
   spotify_artist: string | null
   spotify_thumbnail: string | null
+  music_preview_url: string | null
   theme: ThemeKey
   photo_style: PhotoStyle
   font_family: string
@@ -41,6 +44,9 @@ interface ValentineData {
   canvas_layout: CanvasState | null
   photos: { photo_url: string; display_order: number }[]
 }
+
+
+
 
 // Base canvas dimensions (what the editor uses)
 const MOBILE_WIDTH = 220
@@ -61,6 +67,8 @@ export default function ValentinePageClient() {
   const [scale, setScale] = useState(1)
   const [screenHeight, setScreenHeight] = useState(0)
   const [mounted, setMounted] = useState(false)
+  // State for opening the envelope/overlay
+  const [isOpened, setIsOpened] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -212,11 +220,10 @@ export default function ValentinePageClient() {
       >
         <div className={`w-full h-full ${bobClass}`}>
           <div
-            className={`w-full h-full ${
-              isPolaroid
-                ? 'bg-white p-[6%] pb-[14%] shadow-lg'
-                : 'hearts-border p-[6%] bg-white'
-            }`}
+            className={`w-full h-full ${isPolaroid
+              ? 'bg-white p-[6%] pb-[14%] shadow-lg'
+              : 'hearts-border p-[6%] bg-white'
+              }`}
             style={{ ['--theme-primary' as string]: themeColors.primary }}
           >
             <div className="w-full h-full relative overflow-hidden">
@@ -325,8 +332,11 @@ export default function ValentinePageClient() {
     )
   }
 
-  const renderSpotify = (element: CanvasElement) => {
+  const renderMusicCard = (element: CanvasElement) => {
     if (!valentine.spotify_link) return null
+
+    const provider = getMusicProvider(valentine.spotify_link)
+    const providerName = getProviderName(provider)
 
     // Scale spotify card text based on element width (base width: 140)
     const spotifyScale = element.width / 140
@@ -349,47 +359,52 @@ export default function ValentinePageClient() {
         }}
       >
         <div className="w-full h-full animate-bob-2">
-        <div className="w-full h-full bg-white rounded-md shadow-sm flex items-center gap-1.5 p-1">
-          {/* Thumbnail */}
-          <div className="h-[80%] aspect-square rounded flex-shrink-0 overflow-hidden relative">
-            {valentine.spotify_thumbnail ? (
-              <Image
-                src={valentine.spotify_thumbnail}
-                alt="Album art"
-                fill
-                sizes="60px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />
-            )}
-          </div>
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="font-medium truncate leading-tight" style={{ fontSize: `${titleSize}px` }}>{valentine.spotify_title || 'Song'}</p>
-            <p className="text-gray-500 truncate leading-tight" style={{ fontSize: `${subtitleSize}px` }}>{valentine.spotify_artist || 'Artist'}</p>
-            <div className="flex items-center gap-0.5">
-              <svg style={{ width: iconSize, height: iconSize }} viewBox="0 0 24 24" fill="#1DB954">
-                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-              </svg>
-              <span className="text-gray-400" style={{ fontSize: `${subtitleSize}px` }}>Spotify</span>
+          <div className="w-full h-full bg-white rounded-md shadow-sm flex items-center gap-1.5 p-1">
+            {/* Thumbnail */}
+            <div className="h-[80%] aspect-square rounded flex-shrink-0 overflow-hidden relative">
+              {valentine.spotify_thumbnail ? (
+                <Image
+                  src={valentine.spotify_thumbnail}
+                  alt="Album art"
+                  fill
+                  sizes="60px"
+                  className="object-cover"
+                  unoptimized
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />
+              )}
             </div>
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate leading-tight" style={{ fontSize: `${titleSize}px` }}>{valentine.spotify_title || 'Song'}</p>
+              <p className="text-gray-500 truncate leading-tight" style={{ fontSize: `${subtitleSize}px` }}>{valentine.spotify_artist || 'Artist'}</p>
+              <div className="flex items-center gap-0.5">
+                <PlatformIcon
+                  provider={provider}
+                  style={{ width: iconSize, height: iconSize }}
+                />
+                <span className="text-gray-400" style={{ fontSize: `${subtitleSize}px` }}>{providerName}</span>
+              </div>
+            </div>
+            {/* Play button */}
+            <a
+              href={getMusicOpenUrl(valentine.spotify_link) || valentine.spotify_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full text-white font-medium flex-shrink-0 flex items-center gap-0.5"
+              style={{
+                backgroundColor: themeColors.primary,
+                fontSize: `${btnSize}px`,
+                padding: `${Math.max(2, 2 * spotifyScale)}px ${Math.max(4, 6 * spotifyScale)}px`,
+              }}
+            >
+              <svg style={{ width: iconSize, height: iconSize }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Listen
+            </a>
           </div>
-          {/* Play button */}
-          <a
-            href={getSpotifyOpenUrl(valentine.spotify_link) || valentine.spotify_link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full text-white font-medium flex-shrink-0"
-            style={{
-              backgroundColor: themeColors.primary,
-              fontSize: `${btnSize}px`,
-              padding: `${Math.max(2, 2 * spotifyScale)}px ${Math.max(4, 6 * spotifyScale)}px`,
-            }}
-          >
-            Play
-          </a>
-        </div>
         </div>
       </div>
     )
@@ -402,7 +417,7 @@ export default function ValentinePageClient() {
         case 'photo': return renderPhoto(element)
         case 'text': return renderText(element)
         case 'buttons': return renderButtons(element)
-        case 'spotify': return renderSpotify(element)
+        case 'spotify': return renderMusicCard(element)
         default: return null
       }
     } catch (e) {
@@ -420,22 +435,22 @@ export default function ValentinePageClient() {
       >
         {/* Background hearts */}
         {[
-          { left: '5%',  top: '8%',  size: 24, duration: 7,   delay: 0 },
-          { left: '88%', top: '5%',  size: 20, duration: 9,   delay: 1.5 },
-          { left: '15%', top: '22%', size: 28, duration: 8,   delay: 0.8 },
-          { left: '75%', top: '18%', size: 18, duration: 10,  delay: 3.2 },
-          { left: '45%', top: '12%', size: 22, duration: 11,  delay: 2.1 },
+          { left: '5%', top: '8%', size: 24, duration: 7, delay: 0 },
+          { left: '88%', top: '5%', size: 20, duration: 9, delay: 1.5 },
+          { left: '15%', top: '22%', size: 28, duration: 8, delay: 0.8 },
+          { left: '75%', top: '18%', size: 18, duration: 10, delay: 3.2 },
+          { left: '45%', top: '12%', size: 22, duration: 11, delay: 2.1 },
           { left: '92%', top: '35%', size: 26, duration: 7.5, delay: 0.3 },
-          { left: '3%',  top: '45%', size: 20, duration: 9.5, delay: 4 },
-          { left: '55%', top: '40%', size: 30, duration: 8,   delay: 1.8 },
-          { left: '30%', top: '55%', size: 22, duration: 10,  delay: 2.5 },
+          { left: '3%', top: '45%', size: 20, duration: 9.5, delay: 4 },
+          { left: '55%', top: '40%', size: 30, duration: 8, delay: 1.8 },
+          { left: '30%', top: '55%', size: 22, duration: 10, delay: 2.5 },
           { left: '82%', top: '52%', size: 24, duration: 6.5, delay: 0.6 },
           { left: '10%', top: '68%', size: 28, duration: 8.5, delay: 3.5 },
-          { left: '65%', top: '65%', size: 20, duration: 11,  delay: 1.2 },
-          { left: '40%', top: '78%', size: 26, duration: 7,   delay: 4.5 },
-          { left: '90%', top: '75%', size: 18, duration: 9,   delay: 2.8 },
-          { left: '20%', top: '88%', size: 24, duration: 10,  delay: 0.9 },
-          { left: '70%', top: '85%', size: 22, duration: 8,   delay: 3.8 },
+          { left: '65%', top: '65%', size: 20, duration: 11, delay: 1.2 },
+          { left: '40%', top: '78%', size: 26, duration: 7, delay: 4.5 },
+          { left: '90%', top: '75%', size: 18, duration: 9, delay: 2.8 },
+          { left: '20%', top: '88%', size: 24, duration: 10, delay: 0.9 },
+          { left: '70%', top: '85%', size: 22, duration: 8, delay: 3.8 },
           { left: '50%', top: '92%', size: 28, duration: 7.5, delay: 1.6 },
         ].map((heart, i) => (
           <span
@@ -477,8 +492,8 @@ export default function ValentinePageClient() {
           {/* Spotify */}
           {valentine.spotify_link && (
             <div className="w-full max-w-xs animate-float-simple-delayed">
-              <SpotifyCard
-                spotifyLink={valentine.spotify_link}
+              <MusicCard
+                musicLink={valentine.spotify_link}
                 title={valentine.spotify_title || undefined}
                 artist={valentine.spotify_artist || undefined}
                 thumbnail={valentine.spotify_thumbnail}
@@ -494,22 +509,22 @@ export default function ValentinePageClient() {
 
   // Scattered hearts across the full page
   const scatteredHearts = [
-    { left: '5%',  top: '8%',  size: 24, duration: 7,   delay: 0 },
-    { left: '88%', top: '5%',  size: 20, duration: 9,   delay: 1.5 },
-    { left: '15%', top: '22%', size: 28, duration: 8,   delay: 0.8 },
-    { left: '75%', top: '18%', size: 18, duration: 10,  delay: 3.2 },
-    { left: '45%', top: '12%', size: 22, duration: 11,  delay: 2.1 },
+    { left: '5%', top: '8%', size: 24, duration: 7, delay: 0 },
+    { left: '88%', top: '5%', size: 20, duration: 9, delay: 1.5 },
+    { left: '15%', top: '22%', size: 28, duration: 8, delay: 0.8 },
+    { left: '75%', top: '18%', size: 18, duration: 10, delay: 3.2 },
+    { left: '45%', top: '12%', size: 22, duration: 11, delay: 2.1 },
     { left: '92%', top: '35%', size: 26, duration: 7.5, delay: 0.3 },
-    { left: '3%',  top: '45%', size: 20, duration: 9.5, delay: 4 },
-    { left: '55%', top: '40%', size: 30, duration: 8,   delay: 1.8 },
-    { left: '30%', top: '55%', size: 22, duration: 10,  delay: 2.5 },
+    { left: '3%', top: '45%', size: 20, duration: 9.5, delay: 4 },
+    { left: '55%', top: '40%', size: 30, duration: 8, delay: 1.8 },
+    { left: '30%', top: '55%', size: 22, duration: 10, delay: 2.5 },
     { left: '82%', top: '52%', size: 24, duration: 6.5, delay: 0.6 },
     { left: '10%', top: '68%', size: 28, duration: 8.5, delay: 3.5 },
-    { left: '65%', top: '65%', size: 20, duration: 11,  delay: 1.2 },
-    { left: '40%', top: '78%', size: 26, duration: 7,   delay: 4.5 },
-    { left: '90%', top: '75%', size: 18, duration: 9,   delay: 2.8 },
-    { left: '20%', top: '88%', size: 24, duration: 10,  delay: 0.9 },
-    { left: '70%', top: '85%', size: 22, duration: 8,   delay: 3.8 },
+    { left: '65%', top: '65%', size: 20, duration: 11, delay: 1.2 },
+    { left: '40%', top: '78%', size: 26, duration: 7, delay: 4.5 },
+    { left: '90%', top: '75%', size: 18, duration: 9, delay: 2.8 },
+    { left: '20%', top: '88%', size: 24, duration: 10, delay: 0.9 },
+    { left: '70%', top: '85%', size: 22, duration: 8, delay: 3.8 },
     { left: '50%', top: '92%', size: 28, duration: 7.5, delay: 1.6 },
   ]
 
@@ -554,11 +569,10 @@ export default function ValentinePageClient() {
                 >
                   <div className={BOB_CLASSES[i % BOB_CLASSES.length]}>
                     <div
-                      className={`relative ${
-                        valentine.photo_style === 'polaroid'
-                          ? 'bg-white p-2 pb-6 shadow-lg'
-                          : 'hearts-border p-2 bg-white'
-                      }`}
+                      className={`relative ${valentine.photo_style === 'polaroid'
+                        ? 'bg-white p-2 pb-6 shadow-lg'
+                        : 'hearts-border p-2 bg-white'
+                        }`}
                       style={{
                         ['--theme-primary' as string]: themeColors.primary,
                       }}
@@ -633,8 +647,8 @@ export default function ValentinePageClient() {
           {/* Spotify */}
           {valentine.spotify_link && (
             <div className="mb-8 animate-bob-2">
-              <SpotifyCard
-                spotifyLink={valentine.spotify_link}
+              <MusicCard
+                musicLink={valentine.spotify_link}
                 title={valentine.spotify_title || undefined}
                 artist={valentine.spotify_artist || undefined}
                 thumbnail={valentine.spotify_thumbnail}
@@ -660,39 +674,74 @@ export default function ValentinePageClient() {
       className="w-screen h-screen overflow-hidden flex items-center justify-center relative"
       style={{ backgroundColor: themeColors.bgColor }}
     >
-      {/* Scattered background hearts across full viewport */}
-      {scatteredHearts.map((heart, i) => (
-        <span
-          key={`heart-${i}`}
-          className="absolute animate-heart-drift"
+      {/* Music Player (Hidden/Embed) */}
+      {/* We force a re-render when opened to retry playback with user interaction if autoplay failed */}
+      <MusicPlayer
+        musicLink={valentine.spotify_link}
+        previewUrl={valentine.music_preview_url}
+        playing={isOpened} // Only try to play when opened to ensure interaction
+      />
+
+      {/* Open Overlay */}
+      {!isOpened && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity duration-1000"
+          onClick={() => setIsOpened(true)}
+        >
+          <div className="text-center animate-float-simple cursor-pointer">
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg mx-auto mb-6 hover:scale-105 transition-transform">
+              <span className="text-4xl">💌</span>
+            </div>
+            <h1 className="text-white text-3xl font-bold drop-shadow-md" style={{ fontFamily }}>
+              A Valentine for You
+            </h1>
+            <p className="text-white/90 mt-2 text-lg animate-pulse">
+              Click to open
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content (blur if not opened? Or just cover it. Cover is better to surprise) */}
+      {/* Actual Content Container */}
+      <div
+        className={`w-full h-full relative flex items-center justify-center transition-all duration-1000 ${!isOpened ? 'scale-95 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+      >
+
+        {/* Scattered background hearts across full viewport */}
+        {scatteredHearts.map((heart, i) => (
+          <span
+            key={`heart-${i}`}
+            className="absolute animate-heart-drift"
+            style={{
+              left: heart.left,
+              top: heart.top,
+              fontSize: heart.size,
+              animationDuration: `${heart.duration}s`,
+              animationDelay: `${heart.delay}s`,
+              color: themeColors.primary,
+              opacity: 0.25,
+              zIndex: 0,
+            }}
+          >
+            ♥
+          </span>
+        ))}
+
+        {/* Scaled canvas — centered, fits entirely within viewport */}
+        <div
+          className="relative"
           style={{
-            left: heart.left,
-            top: heart.top,
-            fontSize: heart.size,
-            animationDuration: `${heart.duration}s`,
-            animationDelay: `${heart.delay}s`,
-            color: themeColors.primary,
-            opacity: 0.25,
-            zIndex: 0,
+            width: baseW,
+            height: baseH,
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
+            zIndex: 1,
           }}
         >
-          ♥
-        </span>
-      ))}
+          {elements.map(renderElement)}
 
-      {/* Scaled canvas — centered, fits entirely within viewport */}
-      <div
-        className="relative"
-        style={{
-          width: baseW,
-          height: baseH,
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
-          zIndex: 1,
-        }}
-      >
-        {elements.map(renderElement)}
-
+        </div>
       </div>
     </main>
   )

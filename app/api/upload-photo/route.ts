@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import sharp from 'sharp'
 
 const MAX_WIDTH = 1200
@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
 
     const fileName = `${valentineId || 'temp'}/${Date.now()}.webp`
 
-    const { error: uploadError } = await supabase.storage
+    // Use admin client to bypass RLS for uploads
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('valentine-photos')
       .upload(fileName, compressed, {
         contentType: 'image/webp',
@@ -64,7 +65,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to upload photo' }, { status: 500 })
     }
 
-    const { data: urlData } = supabase.storage
+    // For getPublicUrl we can use the admin client too, though it's public anyway
+    const { data: urlData } = supabaseAdmin.storage
       .from('valentine-photos')
       .getPublicUrl(fileName)
 

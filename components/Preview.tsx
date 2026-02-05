@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
-import SpotifyCard from '@/components/SpotifyCard'
+import MusicCard from '@/components/MusicCard'
 
 // Items: photo:0, photo:1, text, buttons, spotify
 export type PreviewItem = string
@@ -145,11 +145,10 @@ export default function Preview({
       return (
         <div className="p-1">
           <div
-            className={`relative ${
-              photoStyle === 'polaroid'
+            className={`relative ${photoStyle === 'polaroid'
                 ? 'polaroid'
                 : 'hearts-border p-1.5 bg-white'
-            }`}
+              }`}
             style={{
               transform: photoStyle === 'polaroid'
                 ? `rotate(${photoIndex % 2 === 0 ? -2 : 2}deg)`
@@ -204,8 +203,8 @@ export default function Preview({
     if (item === 'spotify' && spotifyLink) {
       return (
         <div className="px-4 py-2">
-          <SpotifyCard
-            spotifyLink={spotifyLink}
+          <MusicCard
+            musicLink={spotifyLink}
             themeColor={themeColors.primary}
             compact={viewMode === 'desktop'}
           />
@@ -240,9 +239,8 @@ export default function Preview({
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, item)}
         onDragEnd={handleDragEnd}
-        className={`flex items-center py-1 cursor-grab active:cursor-grabbing transition-all select-none group hover:bg-black/5 rounded-lg mx-1 ${
-          isDragging ? 'opacity-40 scale-95' : ''
-        } ${isDragOver ? 'bg-pink-100 border-2 border-dashed border-pink-400' : ''}`}
+        className={`flex items-center py-1 cursor-grab active:cursor-grabbing transition-all select-none group hover:bg-black/5 rounded-lg mx-1 ${isDragging ? 'opacity-40 scale-95' : ''
+          } ${isDragOver ? 'bg-pink-100 border-2 border-dashed border-pink-400' : ''}`}
       >
         {/* Drag handle - always visible */}
         <div className="flex-shrink-0 w-6 flex items-center justify-center text-gray-300 group-hover:text-gray-500 transition-colors">

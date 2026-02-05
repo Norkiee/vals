@@ -120,5 +120,164 @@ export async function DELETE(request: NextRequest) {
 }
 
 function getDefaultTemplates() {
-  return []
+  return [
+    {
+      id: 'template-classic',
+      name: 'Classic',
+      description: 'The timeless pink hearts style',
+      theme: 'pink',
+      photo_style: 'polaroid',
+      font_family: 'Loveheart',
+      font_size: 16,
+      placeholder_count: 3,
+      display_order: 0,
+      canvas_layout: {
+        mobile: [
+          {
+            id: 'photo-0',
+            type: 'photo',
+            photoIndex: 0,
+            x: 0,
+            y: 67,
+            width: 130,
+            height: 130,
+            rotation: -5,
+            zIndex: 195,
+          },
+          {
+            id: 'photo-1',
+            type: 'photo',
+            photoIndex: 1,
+            x: 119,
+            y: 71,
+            width: 101,
+            height: 101,
+            rotation: 5,
+            zIndex: 194,
+          },
+          {
+            id: 'photo-2',
+            type: 'photo',
+            photoIndex: 2,
+            x: 62,
+            y: 122,
+            width: 124,
+            height: 124,
+            rotation: -5,
+            zIndex: 193,
+          },
+          {
+            id: 'text-1',
+            type: 'text',
+            x: 9,
+            y: 286,
+            width: 200,
+            height: 60,
+            rotation: 0,
+            zIndex: 170,
+          },
+          {
+            id: 'buttons-1',
+            type: 'buttons',
+            x: 35,
+            y: 356,
+            width: 160,
+            height: 40,
+            rotation: 0,
+            zIndex: 199,
+          },
+          {
+            id: 'spotify-1',
+            type: 'spotify',
+            x: 36,
+            y: 414,
+            width: 157,
+            height: 62,
+            rotation: 0,
+            zIndex: 142,
+          }
+        ],
+        desktop: [] // Desktop layouts left effectively empty/default for now as user only provided mobile specs
+      }
+    },
+    {
+      id: 'template-clean',
+      name: 'Clean',
+      description: 'A modern, minimal orange theme',
+      theme: 'sunset',
+      photo_style: 'hearts',
+      font_family: 'Loveheart',
+      font_size: 18,
+      placeholder_count: 3,
+      display_order: 1,
+      canvas_layout: {
+        mobile: [
+          {
+            id: 'photo-0',
+            type: 'photo',
+            photoIndex: 0,
+            x: 0,
+            y: 51,
+            width: 131,
+            height: 131,
+            rotation: -5,
+            zIndex: 113,
+          },
+          {
+            id: 'photo-1',
+            type: 'photo',
+            photoIndex: 1,
+            x: 110,
+            y: 50,
+            width: 108,
+            height: 108,
+            rotation: 5,
+            zIndex: 132,
+          },
+          {
+            id: 'photo-2',
+            type: 'photo',
+            photoIndex: 2,
+            x: 60,
+            y: 135,
+            width: 146,
+            height: 146,
+            rotation: -5,
+            zIndex: 118,
+          },
+          {
+            id: 'text-1',
+            type: 'text',
+            x: 0,
+            y: 275,
+            width: 228,
+            height: 81,
+            rotation: 0,
+            zIndex: 134,
+          },
+          {
+            id: 'buttons-1',
+            type: 'buttons',
+            x: 37,
+            y: 345,
+            width: 160,
+            height: 40,
+            rotation: 0,
+            zIndex: 123,
+          },
+          {
+            id: 'spotify-1',
+            type: 'spotify',
+            x: 71,
+            y: 403,
+            width: 143,
+            height: 60,
+            rotation: 0,
+            zIndex: 129,
+          }
+        ],
+        desktop: []
+      }
+    }
+  ]
 }

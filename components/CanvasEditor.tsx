@@ -3,8 +3,8 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import Image from 'next/image'
 import { THEMES, ThemeKey, PhotoStyle } from '@/lib/constants'
-import { SpotifyMetadata } from '@/lib/spotify'
-import SpotifyCard from '@/components/SpotifyCard'
+import { MusicMetadata } from '@/lib/music'
+import MusicCard from '@/components/MusicCard'
 
 export interface CanvasElement {
   id: string
@@ -27,7 +27,7 @@ interface CanvasEditorProps {
   photos: string[]
   message: string
   spotifyLink: string
-  spotifyMeta?: SpotifyMetadata | null
+  spotifyMeta?: MusicMetadata | null
   theme: ThemeKey
   photoStyle: PhotoStyle
   canvasState?: CanvasState
@@ -303,7 +303,7 @@ export default function CanvasEditor({
 
     setMobileElements(prev => updateElementsWithPhotos(prev, 'mobile'))
     setDesktopElements(prev => updateElementsWithPhotos(prev, 'desktop'))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos.length, spotifyLink])
 
   // Ensure text and buttons elements always exist - for both modes
@@ -376,7 +376,7 @@ export default function CanvasEditor({
 
     setMobileElements(prev => addOrRemoveSpotify(prev, 'mobile'))
     setDesktopElements(prev => addOrRemoveSpotify(prev, 'desktop'))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spotifyLink])
 
   // Refs for measuring actual rendered content height
@@ -410,7 +410,7 @@ export default function CanvasEditor({
         updates[el.id] != null ? { ...el, height: updates[el.id] } : el
       ))
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fontSize, font, viewMode, spotifyLink, spotifyMeta])
 
   // Notify parent of state changes - send both states
@@ -661,9 +661,8 @@ export default function CanvasEditor({
           if (templateMode) {
             return (
               <div
-                className={`w-full h-full ${
-                  photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
-                }`}
+                className={`w-full h-full ${photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
+                  }`}
                 style={{ ['--theme-primary' as string]: themeColors.primary }}
               >
                 <div className="w-full h-full bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center rounded-lg">
@@ -679,9 +678,8 @@ export default function CanvasEditor({
             // Show placeholder for unfilled template slots
             return (
               <div
-                className={`w-full h-full ${
-                  photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
-                }`}
+                className={`w-full h-full ${photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
+                  }`}
                 style={{ ['--theme-primary' as string]: themeColors.primary }}
               >
                 <div className="w-full h-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center rounded">
@@ -694,9 +692,8 @@ export default function CanvasEditor({
           }
           return (
             <div
-              className={`w-full h-full ${
-                photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
-              }`}
+              className={`w-full h-full ${photoStyle === 'polaroid' ? 'bg-white p-2 pb-6 shadow-lg' : 'hearts-border p-2 bg-white'
+                }`}
               style={{ ['--theme-primary' as string]: themeColors.primary }}
             >
               <div className="w-full h-full relative">
@@ -763,8 +760,8 @@ export default function CanvasEditor({
           const usePlaceholder = !spotifyLink || templateMode
           return (
             <div ref={spotifyContentRef} className="w-full h-full overflow-hidden">
-              <SpotifyCard
-                spotifyLink={usePlaceholder ? 'https://open.spotify.com/track/placeholder' : spotifyLink}
+              <MusicCard
+                musicLink={usePlaceholder ? 'https://open.spotify.com/track/placeholder' : spotifyLink}
                 title={usePlaceholder ? 'Song title' : spotifyMeta?.title}
                 artist={usePlaceholder ? 'Artist name' : spotifyMeta?.artist}
                 thumbnail={usePlaceholder ? undefined : spotifyMeta?.thumbnail}

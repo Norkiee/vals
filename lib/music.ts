@@ -1,5 +1,3 @@
-import { getMusicProvider as identifyProvider } from './music' // Self-ref trick if needed, or just implementation
-
 export interface MusicMetadata {
     title: string
     artist: string

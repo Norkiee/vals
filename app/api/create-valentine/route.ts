@@ -108,12 +108,17 @@ export async function POST(request: NextRequest) {
     let musicPreviewUrl: string | null = null
 
     if (spotifyLink?.trim()) {
-      const metadata = await scrapeMusicMetadata(spotifyLink.trim())
-      if (metadata) {
-        spotifyTitle = metadata.title
-        spotifyArtist = metadata.artist
-        spotifyThumbnail = metadata.thumbnail
-        musicPreviewUrl = metadata.previewUrl
+      try {
+        const metadata = await scrapeMusicMetadata(spotifyLink.trim())
+        if (metadata) {
+          spotifyTitle = metadata.title
+          spotifyArtist = metadata.artist
+          spotifyThumbnail = metadata.thumbnail
+          musicPreviewUrl = metadata.previewUrl
+        }
+      } catch (metadataError) {
+        console.error('Failed to fetch music metadata, continuing without it:', metadataError)
+        // Continue creating valentine even if metadata fetch fails
       }
     }
 
